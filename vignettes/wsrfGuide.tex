@@ -1,0 +1,455 @@
+\documentclass[11pt,a4paper]{article}\usepackage{graphicx, color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.2, 0.2, 0.2}
+\newcommand{\hlnumber}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlfunctioncall}[1]{\textcolor[rgb]{0.501960784313725,0,0.329411764705882}{\textbf{#1}}}%
+\newcommand{\hlstring}[1]{\textcolor[rgb]{0.6,0.6,1}{#1}}%
+\newcommand{\hlkeyword}[1]{\textcolor[rgb]{0,0,0}{\textbf{#1}}}%
+\newcommand{\hlargument}[1]{\textcolor[rgb]{0.690196078431373,0.250980392156863,0.0196078431372549}{#1}}%
+\newcommand{\hlcomment}[1]{\textcolor[rgb]{0.180392156862745,0.6,0.341176470588235}{#1}}%
+\newcommand{\hlroxygencomment}[1]{\textcolor[rgb]{0.43921568627451,0.47843137254902,0.701960784313725}{#1}}%
+\newcommand{\hlformalargs}[1]{\textcolor[rgb]{0.690196078431373,0.250980392156863,0.0196078431372549}{#1}}%
+\newcommand{\hleqformalargs}[1]{\textcolor[rgb]{0.690196078431373,0.250980392156863,0.0196078431372549}{#1}}%
+\newcommand{\hlassignement}[1]{\textcolor[rgb]{0,0,0}{\textbf{#1}}}%
+\newcommand{\hlpackage}[1]{\textcolor[rgb]{0.588235294117647,0.709803921568627,0.145098039215686}{#1}}%
+\newcommand{\hlslot}[1]{\textit{#1}}%
+\newcommand{\hlsymbol}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlprompt}[1]{\textcolor[rgb]{0.2,0.2,0.2}{#1}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+
+%\VignetteEngine{knitr::knitr}
+
+
+
+
+\usepackage[color=yellow]{todonotes}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{natbib}
+\definecolor{mediumseagreen}{rgb}{0.0255,0.4520,0.1394}
+\hypersetup{colorlinks=true,
+  filecolor=black,
+  urlcolor=black,
+  citecolor=mediumseagreen,
+  linkcolor=blue,
+  plainpages=false}
+
+% \let\proglang=\textsf
+% \newcommand\code{\bgroup\@makeother\_\@makeother\~\@makeother\$\@codex}
+% \def\@codex#1{{\normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Rdataset}[1]{\textit{#1}}
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
+
+%% page layout
+\topmargin 0pt
+\textheight 46\baselineskip
+\advance\textheight by \topskip
+\oddsidemargin 0.1in
+\evensidemargin 0.15in
+\marginparwidth 1in
+\oddsidemargin 0.125in
+\evensidemargin 0.125in
+\marginparwidth 0.75in
+\textwidth 6.125in
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+
+\begin{document}
+
+
+\title{Quick Start Guide for \pkg{wsrf}}
+\author{He Zhao}
+\maketitle
+
+
+\section{Introduction}
+
+The \proglang{R} package \pkg{wsrf} is a parallel implementation of
+the Weighted Subspace Random Forest algorithm (wsrf) of
+\cite{xu2012classifying}.  A novel variable weighting method is used
+for variable subspace selection in place of the traditional approach
+of random variable sampling.  This new approach is particularly useful
+in building models for high dimensional data---often consisting of
+thousands of variables.  Parallel computation is used to take
+advantage of multi-core machines and clusters of machines to build
+random forest models from high dimensional data with reduced elapsed
+times.  The paper about its implementation and performance details is
+under development.
+
+\section{Requirements and Installation Notes}
+
+Currently, \pkg{wsrf} requires R (>= 3.0.0), Rcpp (>= 0.10.2).  For
+the use of multi-threading, a \proglang{C++} compiler with
+\proglang{C++11} standard support of threads or the Boost
+\proglang{C++} library \citep{Boost} with version above 1.54 is
+required. The choice is available at installation time depending on
+what is available to the user.  The development version of the
+\pkg{wsrf} package is available at
+\href{http://rattle.togaware.com/}{Togaware.com}.  To install the
+latest development version of the package, from within \proglang{R}
+run:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{install.packages}(\hlstring{"wsrf"}, repos=\hlstring{"http://rattle.togaware.com"})
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+By default, the C++11 standard library is used for multi-threading,
+other options can be configured through the argument
+\code{configure.args}.
+
+We recommend using C++11 standard library for accessing multi-threaded
+functionality, which will be our main focus for development in the
+future.  Though support for compiling C++11 code in packages is not
+available in current release of \proglang{R}, it has been tested that
+it can be compiled if the user has already installed the latest
+version of \proglang{GCC} and \proglang{C++} standard
+library\footnote{\proglang{C++11} support is experimental in R-devel
+  now, see
+  \url{http://developer.r-project.org/blosxom.cgi/R-devel/NEWS/2013/12/02\#n2013-12-02}}.
+
+Besides the default installation for \proglang{C++11}, we also provide
+another two implementations of \pkg{wsrf}.  One is an implementation
+without parallelism where trees are built sequentially.  The other
+implements parallelism using Boost.
+
+The choice of version to install is available at build time.  To
+install a version without parallelism, as required when C++11 is not
+available nor is Boost, and is the recommended for Microsoft Windows
+platform with the current version of R (3.0):
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{install.packages}(\hlstring{"wsrf"}, 
+                 repos=\hlstring{"http://rattle.togaware.com"},
+                 type=\hlstring{"source"}, 
+                 configure.args=\hlstring{"--enable-c11=no"})
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Finally the version using Boost for multithreading can be installed
+with the appropriate configuration options. This is suitable when the
+version of C++ available does not support C++11.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{install.packages}(\hlstring{"wsrf"}, 
+                 repos=\hlstring{"http://rattle.togaware.com"},
+                 configure.args="--with-boost-include=<Boost include path>
+                                 --with-boost-lib=<Boost lib path>")
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+
+\section{Usage} \label{sec:package}
+
+This section demonstrates how to use \pkg{wsrf}, especially on a
+cluster of machines.
+
+The example uses a small dataset \Rdataset{weather} from \pkg{rattle}
+\citep{rattle}.  See the help page of \pkg{rattle} in \proglang{R}
+(\code{?weather}) for more details of \Rdataset{weather}.  Below are
+the basic information of it.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{library}(rattle)
+ds <- weather
+\hlfunctioncall{dim}(ds)
+\end{alltt}
+\begin{verbatim}
+## [1] 366  24
+\end{verbatim}
+\begin{alltt}
+\hlfunctioncall{names}(ds)
+\end{alltt}
+\begin{verbatim}
+##  [1] "Date"          "Location"      "MinTemp"       "MaxTemp"      
+##  [5] "Rainfall"      "Evaporation"   "Sunshine"      "WindGustDir"  
+##  [9] "WindGustSpeed" "WindDir9am"    "WindDir3pm"    "WindSpeed9am" 
+## [13] "WindSpeed3pm"  "Humidity9am"   "Humidity3pm"   "Pressure9am"  
+....
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Before building the model we need to prepare the training dataset.
+First we note the various roles played by the different variables,
+including identifying the irrelevant variables
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+target <- \hlstring{"RainTomorrow"}
+id     <- \hlfunctioncall{c}(\hlstring{"Date"}, \hlstring{"Location"})
+risk   <- \hlstring{"RISK_MM"}
+ignore <- \hlfunctioncall{c}(id, \hlfunctioncall{if} (\hlfunctioncall{exists}(\hlstring{"risk"})) risk)
+
+(vars <- \hlfunctioncall{setdiff}(\hlfunctioncall{names}(ds), ignore))
+\end{alltt}
+\begin{verbatim}
+##  [1] "MinTemp"       "MaxTemp"       "Rainfall"      "Evaporation"  
+##  [5] "Sunshine"      "WindGustDir"   "WindGustSpeed" "WindDir9am"   
+##  [9] "WindDir3pm"    "WindSpeed9am"  "WindSpeed3pm"  "Humidity9am"  
+## [13] "Humidity3pm"   "Pressure9am"   "Pressure3pm"   "Cloud9am"     
+....
+\end{verbatim}
+\begin{alltt}
+\hlfunctioncall{dim}(ds[vars])
+\end{alltt}
+\begin{verbatim}
+## [1] 366  21
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Next we deal with missing values, using \texttt{na.roughfix()} from
+\pkg{randomForest} to take care of them.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{library}(randomForest)
+\hlfunctioncall{if} (\hlfunctioncall{sum}(\hlfunctioncall{is.na}(ds[vars]))) ds[vars] <- \hlfunctioncall{na.roughfix}(ds[vars])
+ds[target] <- \hlfunctioncall{as.factor}(ds[[target]])
+(tt <- \hlfunctioncall{table}(ds[target]))
+\end{alltt}
+\begin{verbatim}
+## 
+##  No Yes 
+## 300  66
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+We construct the formula that describes the model which will predict
+the target based on all other variables.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+(form <- \hlfunctioncall{as.formula}(\hlfunctioncall{paste}(target, \hlstring{"~ ."})))
+\end{alltt}
+\begin{verbatim}
+## RainTomorrow ~ .
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Finally we create the randomly selected training and test datasets,
+setting a seed so that the results can be exactly replicated.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+seed <- 42
+\hlfunctioncall{set.seed}(seed)
+\hlfunctioncall{length}(train <- \hlfunctioncall{sample}(\hlfunctioncall{nrow}(ds), 0.7*\hlfunctioncall{nrow}(ds)))
+\end{alltt}
+\begin{verbatim}
+## [1] 256
+\end{verbatim}
+\begin{alltt}
+\hlfunctioncall{length}(test <- \hlfunctioncall{setdiff}(\hlfunctioncall{seq_len}(\hlfunctioncall{nrow}(ds)), train))
+\end{alltt}
+\begin{verbatim}
+## [1] 110
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+The signature of the function to build a weighted random forest model
+in \pkg{wsrf} is:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{wsrf}(formula, 
+     data, 
+     ntrees=500, 
+     nvars=NULL,
+     weights=TRUE, 
+     parallel=TRUE)
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+We use the training dataset to build a random forest model.  All
+parameters, except ``formula'' and ``data'', use their default values:
+500 for ``ntrees'' --- the number of trees, the same as other package
+(\pkg{randomForest} and \pkg{party}); TRUE for ``weights'' ---
+weighted subspace random forest or random forest; TRUE for
+``parallel'' --- use multi-thread or other options, etc.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{library}(wsrf)
+model.wsrf <- \hlfunctioncall{wsrf}(form, data=ds[train, vars])
+\hlfunctioncall{print}(model.wsrf, summary=TRUE)
+\end{alltt}
+\begin{verbatim}
+## 
+## Tree 1 with 51 nodes:
+## 1) root
+##  ..2) Pressure9am <= 1013.2
+....
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Here in the output, \textit{Strength} and \textit{Correlation} are two
+measures introduced in \cite{breiman2001random} for evaluating a
+random forest model.  \textit{Strength} measures the collective
+performance of individual trees in a random forest and
+\textit{Correlation} measures the diversity of the trees.
+
+We can also obtain \textit{Strength} and \textit{Correlation} by:
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{strength}(model.wsrf)
+\end{alltt}
+\begin{verbatim}
+## strength 
+##   0.6213
+\end{verbatim}
+\begin{alltt}
+\hlfunctioncall{correlation}(model.wsrf)
+\end{alltt}
+\begin{verbatim}
+## correlation 
+##      0.1866
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Then, \code{predict} the classes of test data.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+cl <- \hlfunctioncall{predict}(model.wsrf, newdata=ds[test, vars], type=\hlstring{"class"})
+actual <- ds[test, target]
+(accuracy.wsrf <- \hlfunctioncall{sum}(cl == actual, na.rm=TRUE)/\hlfunctioncall{length}(actual))
+\end{alltt}
+\begin{verbatim}
+## [1] 0.8455
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Thus, we have built a model that is 84.5455\% accurate on
+unseen testing data.
+
+To compare with \pkg{cforest} and \pkg{randomForest},
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlfunctioncall{library}(randomForest)
+\hlfunctioncall{library}(party)
+model.randomForest <- \hlfunctioncall{randomForest}(form, data=ds[train, vars])
+model.cforest <- \hlfunctioncall{cforest}(form, data=ds[train, vars])
+
+cl <- \hlfunctioncall{predict}(model.randomForest, newdata=ds[test, vars], type=\hlstring{"response"})
+actual <- ds[test, target]
+(accuracy.randomForest <- \hlfunctioncall{sum}(cl == actual, na.rm=TRUE)/\hlfunctioncall{length}(actual))
+\end{alltt}
+\begin{verbatim}
+## [1] 0.8818
+\end{verbatim}
+\begin{alltt}
+
+cl <- \hlfunctioncall{predict}(model.cforest, newdata=ds[test, vars], type=\hlstring{"response"})
+actual <- ds[test, target]
+(accuracy.cforest <- \hlfunctioncall{sum}(cl == actual, na.rm=TRUE)/\hlfunctioncall{length}(actual))
+\end{alltt}
+\begin{verbatim}
+## [1] 0.8091
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+
+Next, we will specify building the model on a cluster of servers.
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+servers <- \hlfunctioncall{paste0}(\hlstring{"node"}, 31:40)
+model.wsrf <- \hlfunctioncall{wsrf}(form, data=ds[train, vars], parallel=servers)
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+
+All we need is a character verctor specifying the hostnames of which
+nodes to use, or a named integer vector, whose values of the elements
+give how many threads to use for model building, in other words, how
+many trees built simultaneously.  More detail descriptions about
+\pkg{wsrf} are presented in.
+
+
+\bibliographystyle{plain}
+\bibliography{wsrfGuide}
+
+
+\end{document}

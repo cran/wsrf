@@ -1,0 +1,111 @@
+
+R version 3.0.2 (2013-09-25) -- "Frisbee Sailing"
+Copyright (C) 2013 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> suppressMessages(library(wsrf))
+> suppressMessages(library(rattle))
+> suppressMessages(library(randomForest))
+> 
+> # prepare parameters
+> ds <- get("weather")
+> dim(ds)
+[1] 366  24
+> names(ds)
+ [1] "Date"          "Location"      "MinTemp"       "MaxTemp"      
+ [5] "Rainfall"      "Evaporation"   "Sunshine"      "WindGustDir"  
+ [9] "WindGustSpeed" "WindDir9am"    "WindDir3pm"    "WindSpeed9am" 
+[13] "WindSpeed3pm"  "Humidity9am"   "Humidity3pm"   "Pressure9am"  
+[17] "Pressure3pm"   "Cloud9am"      "Cloud3pm"      "Temp9am"      
+[21] "Temp3pm"       "RainToday"     "RISK_MM"       "RainTomorrow" 
+> target <- "RainTomorrow"
+> id     <- c("Date", "Location")
+> risk   <- "RISK_MM"
+> ignore <- c(id, if (exists("risk")) risk) 
+> vars   <- setdiff(names(ds), ignore)
+> if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
+> ds[target] <- as.factor(ds[[target]])
+> (tt <- table(ds[target]))
+
+ No Yes 
+300  66 
+> form <- as.formula(paste(target, "~ ."))
+> set.seed(42)
+> train <- sample(nrow(ds), 0.7*nrow(ds))
+> test <- setdiff(seq_len(nrow(ds)), train)
+> 
+> # build model
+> model.wsrf.1 <- wsrf(form, data=ds[train, vars])
+> 
+> # view model
+> print(model.wsrf.1, tree=1)
+Tree 1 has 31 nodes with error rate 0.208.
+1) root
+ ..2) Pressure9am <= 1014.55
+ .. ..3) Rainfall <= 6.5
+ .. .. ..4) Humidity9am <= 77
+ .. .. .. ..5) Pressure3pm <= 1005.35 Yes (0 1)
+ .. .. .. ..6) Pressure3pm > 1005.35
+ .. .. .. .. ..7) WindSpeed3pm <= 14
+ .. .. .. .. .. ..8) Pressure9am <= 1012.15 No (1 0)
+ .. .. .. .. .. ..9) Pressure9am > 1012.15 Yes (0 1)
+ .. .. .. .. ..10) WindSpeed3pm > 14 No (1 0)
+ .. .. ..11) Humidity9am > 77 Yes (0 1)
+ .. ..12) Rainfall > 6.5 No (1 0)
+ ..13) Pressure9am > 1014.55
+ .. ..14) Sunshine <= 8.45
+ .. .. ..15) Sunshine <= 8.3
+ .. .. .. ..16) Pressure3pm <= 1016.1
+ .. .. .. .. ..17) Humidity9am <= 72.5 Yes (0 1)
+ .. .. .. .. ..18) Humidity9am > 72.5 No (1 0)
+ .. .. .. ..19) Pressure3pm > 1016.1
+ .. .. .. .. ..20) Humidity9am <= 94.5
+ .. .. .. .. .. ..21) Temp3pm <= 7.75
+ .. .. .. .. .. .. ..22) WindGustSpeed <= 42.5 No (1 0)
+ .. .. .. .. .. .. ..23) WindGustSpeed > 42.5 No (0.5 0.5)
+ .. .. .. .. .. ..24) Temp3pm > 7.75 No (1 0)
+ .. .. .. .. ..25) Humidity9am > 94.5
+ .. .. .. .. .. ..26) MinTemp <= 2.3 No (1 0)
+ .. .. .. .. .. ..27) MinTemp > 2.3 Yes (0 1)
+ .. .. ..28) Sunshine > 8.3
+ .. .. .. ..29) WindSpeed9am <= 6.5 Yes (0 1)
+ .. .. .. ..30) WindSpeed9am > 6.5 No (1 0)
+ .. ..31) Sunshine > 8.45 No (1 0)
+> summary(model.wsrf.1)
+A Weighted Subspace Random Forest model with 500 trees.
+
+Out-of-Bag Error Rate: 0.1445312
+Strength: 0.6212449
+Correlation: 0.1864185
+
+> summary(model.wsrf.1, tree=c(1,500))
+Tree 1 has 31 nodes with error rate 0.208
+Tree 500 has 39 nodes with error rate 0.190
+> 
+> # evaluate
+> strength(model.wsrf.1)
+ strength 
+0.6212449 
+> correlation(model.wsrf.1)
+correlation 
+  0.1864185 
+> cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="response")
+> actual <- ds[test, target]
+> (accuracy.wsrf <- sum(cl==actual)/length(actual))
+[1] 0.8454545
+> 
+> proc.time()
+   user  system elapsed 
+  3.360   0.072   3.433 
