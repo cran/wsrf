@@ -1,5 +1,5 @@
-a2ba855731b92d0d575e0f33fe3f8b0d *DESCRIPTION
-70f7b06ef88c855eb974aace73335ee4 *NAMESPACE
+3b706aed8327a62ece3373d2e6a4967e *DESCRIPTION
+099bf3fd1bbbb43a1e7d7fdae45b4c1f *NAMESPACE
 43a6c07b65e2ae0b595590cbe63b6b43 *R/correlation.wsrf.R
 c9bda0f75cd4b28f44b77f75075e6685 *R/merge.wsrf.R
 a38761405985e748106d0b2ce4bb7b5b *R/oobErrorRate.wsrf.R
@@ -8,8 +8,12 @@ fe1ff73a53ebb99ae6b43285b9fe3f44 *R/print.wsrf.R
 dbc579be0a712a874fab9ae0d68ff642 *R/strength.wsrf.R
 4564faae748bc112eb9ddfbcb955bc34 *R/summary.wsrf.R
 534c3d877e47c83a2bdbabdbe3f79d1f *R/varCounts.wsrf.R
-5f7f5d553c7053763f4aca881065548f *R/wsrf.R
-0a0e2411768f24c0281e3436a70cf174 *configure
+1654503f8598987f868b8cc646a3b305 *R/wsrf.R
+729e87614bfd202f4fc7fcd53f2dd975 *README.md
+b35724acf65bfe2052062eff9e2123f5 *configure
+01db969cf836cddfb6c0591359c0cd37 *inst/NEWS.Rd
+1101886985cd3cabed06310096be1f54 *inst/doc/wsrfGuide.R
+9a19eb5a88c2560dc96f8f93372db0f0 *inst/doc/wsrfGuide.pdf
 102cfdbb984343992eb2a65aa8897de6 *man/correlation.wsrf.Rd
 1559daf53c9a8fe722858480a58ba15a *man/oobErrorRate.wsrf.Rd
 96507c6449b0dfd38cf437a50329adb3 *man/predict.wsrf.Rd
@@ -21,7 +25,7 @@ b925d6c4bab2dd6a161cdf442de1e3f7 *man/wsrf.Rd
 35330f8baf42988429df995381cf8bc0 *src/IGR.cpp
 c1c6d3a35e7617a1dff19cc5eabac5cd *src/IGR.h
 2697899a30a7da39f25442c542c56a2e *src/Makevars.in
-1e5d442504a90e16ff885bf6e2d35132 *src/Makevars.win.in
+8b4504e1b0040fd5a71b449ac5aedf55 *src/Makevars.win
 524f17e16c6b9bbebe7149fa10683903 *src/RF_deployment.cpp
 7708624babe5cf2349fa1b10589e07c1 *src/RF_deployment.h
 d391e5ffb5fb3ff56e1183dc5cbaf7a7 *src/attribute_selection_method.cpp
@@ -43,5 +47,3 @@ b097d0f9046fd71e9e0d00adb7c812a1 *src/weighted_random_forest.cpp
 6dcddff624853ca121da71a5ef9a59c8 *src/weighted_random_forest.h
 df813100b74088c526c8027e628441e8 *tests/wsrftest.R
 357d4de4c78a57a22ef4856c2b10abc9 *tests/wsrftest.Rout.save
-7ba652fa089c3538736d415491f80679 *vignettes/wsrfGuide.bib
-38cb1891a1f28349aa511f309d284a6f *vignettes/wsrfGuide.tex

@@ -45,6 +45,7 @@ wsrf <- function(formula,
     stop("only either nvars or mtry can be specified")
   else if (missing(nvars))
     nvars <- mtry
+  nvars <- floor(nvars)
 
   # Check for pre-conditions.
   
@@ -186,7 +187,7 @@ wsrf <- function(formula,
   
   # "afterMerge" is used for calculating strength, etc.
   result <- .Call("afterMerge", result, data, nm, PACKAGE="wsrf")
-  
+  result$vars <- names(data)
   return(result)
 }
 
