@@ -16,7 +16,8 @@
 
 \arguments{
   \item{object}{object of class \code{wsrf}.}
-  \item{\dots}{other arguments to \code{strength}.}
+  \item{\dots}{Optional additional arguments. At present no additional
+  arguments are used.}
 }
 
 \details{

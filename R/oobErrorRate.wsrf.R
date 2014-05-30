@@ -1,4 +1,4 @@
-oobErrorRate.wsrf <- function(object, tree, ...)
+oobErrorRate.wsrf <- function(object, tree)
 {
     # trees=	a number indicates tree id of the tree to be summarised
     

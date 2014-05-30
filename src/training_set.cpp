@@ -10,6 +10,7 @@
 TrainingSet::~TrainingSet() {
 	if (value_matrix_ != 0) {
 		int attribute_num = this->attribute_value_mapper_->GetAttributeNum();
+		if (this->isPredict) attribute_num -= 1;
 		for (int i = 0; i < attribute_num; i++)
 			if (value_matrix_[i])
 				free(value_matrix_[i]);
@@ -250,7 +251,7 @@ AttributeValue** TrainingSet::GetValueMatrixP() {
  *
  * It should be the first place encountering missing values.
  */
-StatusCode TrainingSet::ProduceTrainingSetMatrixRcpp(const Rcpp::DataFrame& ds){
+StatusCode TrainingSet::ProduceTrainingSetMatrixRcpp(const Rcpp::DataFrame& ds, bool isPredict){
 	int column_num = ds.size();
 	if (column_num == 0)
 		throw std::range_error("Training Set is empty");
@@ -261,6 +262,7 @@ StatusCode TrainingSet::ProduceTrainingSetMatrixRcpp(const Rcpp::DataFrame& ds){
 		throw std::range_error("Training Set is empty,the program will exit");
 	
 	int attribute_num = this->attribute_value_mapper_->GetAttributeNum();
+	if (isPredict) { attribute_num -= 1; this->isPredict = true; }
 	this->value_matrix_ = (AttributeValue**) malloc(sizeof(AttributeValue*) * attribute_num);
 	
 	for (int index = 0; index < attribute_num; ++index)

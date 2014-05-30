@@ -1,0 +1,316 @@
+\documentclass[11pt,a4paper]{article}
+
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Quick Start Guide}
+
+<<setup, echo=FALSE, message=FALSE>>=
+library(knitr)
+opts_chunk$set(tidy=FALSE)
+
+opts_chunk$set(out.lines=4)
+opts_chunk$set(out.truncate=80)
+
+hook_output <- knit_hooks$get("output")
+hook_source <- knit_hooks$get("source")
+knit_hooks$set(output=function(x, options) 
+{
+  if (options$results != "asis")
+  {
+    # Split string into separate lines.
+    x <- unlist(stringr::str_split(x, "\n"))
+    # Trim to the number of lines specified.
+    if (!is.null(n <- options$out.lines)) 
+    {
+      if (length(x) > n) 
+      {
+        # Truncate the output.
+        x <- c(head(x, n), "....\n")
+      }
+    }
+    # Truncate each line to length specified.
+    if (!is.null(m <- options$out.truncate))
+    {
+      len <- nchar(x)
+      x[len>m] <- paste0(substr(x[len>m], 0, m-3), "...")
+    }
+    # Paste lines back together.
+    x <- paste(x, collapse="\n")
+    # Replace ' = ' with '=' - my preference. Hopefully won't 
+    # affect things inappropriately.
+    x <- gsub(" = ", "=", x)
+  }
+  hook_output(x, options)
+},
+source=function(x, options)
+{
+  # Split string into separate lines.
+  x <- unlist(stringr::str_split(x, "\n"))
+  # Trim to the number of lines specified.
+  if (!is.null(n <- options$src.top)) 
+  {
+    if (length(x) > n) 
+    {
+      # Truncate the output.
+      if (is.null(m <-options$src.bot)) m <- 0
+      x <- c(head(x, n+1), "\n....\n", tail(x, m+2)) 
+   }
+  }
+  # Paste lines back together.
+  x <- paste(x, collapse="\n")
+  hook_source(x, options)
+})
+
+@ 
+
+\usepackage[color=yellow]{todonotes}
+\usepackage{graphicx}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{natbib}
+\definecolor{mediumseagreen}{rgb}{0.0255,0.4520,0.1394}
+\hypersetup{colorlinks=true,
+  filecolor=black,
+  urlcolor=black,
+  citecolor=mediumseagreen,
+  linkcolor=blue,
+  plainpages=false}
+
+% \let\proglang=\textsf
+% \newcommand\code{\bgroup\@makeother\_\@makeother\~\@makeother\$\@codex}
+% \def\@codex#1{{\normalfont\ttfamily\hyphenchar\font=-1 #1}\egroup}
+\newcommand{\proglang}[1]{\textsf{#1}}
+\newcommand{\code}[1]{\texttt{#1}}
+\newcommand{\Rdataset}[1]{\textit{#1}}
+\newcommand{\pkg}[1]{{\fontseries{b}\selectfont #1}}
+
+%% page layout
+\topmargin 0pt
+\textheight 46\baselineskip
+\advance\textheight by \topskip
+\oddsidemargin 0.1in
+\evensidemargin 0.15in
+\marginparwidth 1in
+\oddsidemargin 0.125in
+\evensidemargin 0.125in
+\marginparwidth 0.75in
+\textwidth 6.125in
+
+\begin{document}
+
+
+\title{Quick Start Guide for \pkg{wsrf}}
+\author{He Zhao}
+\maketitle
+
+
+\section{Introduction}
+
+The \proglang{R} package \pkg{wsrf} is a parallel implementation of
+the Weighted Subspace Random Forest algorithm (wsrf) of
+\cite{xu2012classifying}.  A novel variable weighting method is used
+for variable subspace selection in place of the traditional approach
+of random variable sampling.  This new approach is particularly useful
+in building models for high dimensional data---often consisting of
+thousands of variables.  Parallel computation is used to take
+advantage of multi-core machines and clusters of machines to build
+random forest models from high dimensional data with reduced elapsed
+times.
+
+\section{Requirements and Installation Notes}
+
+Currently, \pkg{wsrf} requires R (>= 3.0.0), Rcpp (>= 0.10.2).  For
+the use of multi-threading, a \proglang{C++} compiler with
+\proglang{C++11} standard support of threads or the Boost
+\proglang{C++} library \citep{Boost} with version above 1.54 is
+required. The choice is available at installation time depending on
+what is available to the user.  To install the latest version of the
+package, from within \proglang{R} run:
+
+<<eval=FALSE>>=
+install.packages("wsrf")
+@ 
+
+By default, multi-threading functionality is not enabled, which can be
+configured through the argument \code{configure.args}.
+
+<<eval=FALSE>>=
+install.packages("wsrf", configure.args="--enable-c11=yes")
+@ 
+
+We recommend using C++11 standard library for accessing multi-threaded
+functionality, which will be our main focus for development in the
+future.  Though support for compiling C++11 code in packages is not
+available in current release of \proglang{R}, it has been tested that
+it can be compiled if the user has already installed the latest
+version of \proglang{GCC} and \proglang{C++} standard
+library\footnote{\proglang{C++11} support is experimental in R-devel
+  now, see
+  \url{http://developer.r-project.org/blosxom.cgi/R-devel/NEWS/2013/12/02\#n2013-12-02}}.
+
+Besides the default installation for \proglang{C++11}, we also provide
+another implementations of \pkg{wsrf}, which implements parallelism
+using Boost.
+
+The choice of version to install is available at build time.  The
+version without parallelism, as required when C++11 is not available
+nor is Boost, and is the recommended and only possible choice for
+Microsoft Windows platform with the current version of R
+(3.0) (the same as the first installation method above):
+
+<<eval=FALSE>>=
+install.packages("wsrf", 
+                 configure.args="--enable-c11=no")
+@ %
+Finally the version using Boost for multithreading can be installed
+with the appropriate configuration options. This is suitable when the
+version of C++ available does not support C++11.
+<<eval=FALSE>>=
+install.packages("wsrf", 
+                 configure.args="--with-boost-include=<Boost include path>
+                                 --with-boost-lib=<Boost lib path>")
+@ 
+
+
+\section{Usage} \label{sec:package}
+
+This section demonstrates how to use \pkg{wsrf}, especially on a
+cluster of machines.
+
+The example uses a small dataset \Rdataset{weather} from \pkg{rattle}
+\citep{rattle}.  See the help page of \pkg{rattle} in \proglang{R}
+(\code{?weather}) for more details of \Rdataset{weather}.  Below are
+the basic information of it.
+
+<<usage_load, message=FALSE>>=
+library(rattle)
+ds <- weather
+dim(ds)
+names(ds)
+@
+
+Before building the model we need to prepare the training dataset.
+First we note the various roles played by the different variables,
+including identifying the irrelevant variables
+
+<<usage_prepare>>=
+target <- "RainTomorrow"
+id     <- c("Date", "Location")
+risk   <- "RISK_MM"
+ignore <- c(id, if (exists("risk")) risk)
+
+(vars <- setdiff(names(ds), ignore))
+dim(ds[vars])
+@ 
+
+Next we deal with missing values, using \texttt{na.roughfix()} from
+\pkg{randomForest} to take care of them.
+
+<<message=FALSE>>=
+library(randomForest)
+if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
+ds[target] <- as.factor(ds[[target]])
+(tt <- table(ds[target]))
+@ 
+
+We construct the formula that describes the model which will predict
+the target based on all other variables.
+
+<<>>=
+(form <- as.formula(paste(target, "~ .")))
+@ 
+
+Finally we create the randomly selected training and test datasets,
+setting a seed so that the results can be exactly replicated.
+
+<<>>=
+seed <- 42
+set.seed(seed)
+length(train <- sample(nrow(ds), 0.7*nrow(ds)))
+length(test <- setdiff(seq_len(nrow(ds)), train))
+@
+
+The signature of the function to build a weighted random forest model
+in \pkg{wsrf} is:
+
+<<eval=FALSE>>=
+wsrf(formula, 
+     data, 
+     ntrees=500, 
+     nvars=NULL,
+     weights=TRUE, 
+     parallel=TRUE)
+@ 
+
+We use the training dataset to build a random forest model.  All
+parameters, except ``formula'' and ``data'', use their default values:
+500 for ``ntrees'' --- the number of trees, the same as other package
+(\pkg{randomForest} and \pkg{party}); TRUE for ``weights'' ---
+weighted subspace random forest or random forest; TRUE for
+``parallel'' --- use multi-thread or other options, etc.
+
+<<usage_build_by_default, message=FALSE>>=
+library(wsrf)
+model.wsrf <- wsrf(form, data=ds[train, vars])
+print(model.wsrf, summary=TRUE)
+@
+
+Here in the output, \textit{Strength} and \textit{Correlation} are two
+measures introduced in \cite{breiman2001random} for evaluating a
+random forest model.  \textit{Strength} measures the collective
+performance of individual trees in a random forest and
+\textit{Correlation} measures the diversity of the trees.
+
+We can also obtain \textit{Strength} and \textit{Correlation} by:
+
+<<>>=
+strength(model.wsrf)
+correlation(model.wsrf)
+@
+
+Then, \code{predict} the classes of test data.
+
+<<usage_evaluate>>=
+cl <- predict(model.wsrf, newdata=ds[test, vars], type="class")
+actual <- ds[test, target]
+(accuracy.wsrf <- sum(cl == actual, na.rm=TRUE)/length(actual))
+@
+
+Thus, we have built a model that is \Sexpr{100*accuracy.wsrf}\% accurate on
+unseen testing data.
+
+To compare with \pkg{cforest} and \pkg{randomForest},
+
+<<compare_with_cforest_randomForest, message=FALSE>>=
+library(randomForest)
+library(party)
+model.randomForest <- randomForest(form, data=ds[train, vars])
+model.cforest <- cforest(form, data=ds[train, vars])
+
+cl <- predict(model.randomForest, newdata=ds[test, vars], type="response")
+actual <- ds[test, target]
+(accuracy.randomForest <- sum(cl == actual, na.rm=TRUE)/length(actual))
+
+cl <- predict(model.cforest, newdata=ds[test, vars], type="response")
+actual <- ds[test, target]
+(accuracy.cforest <- sum(cl == actual, na.rm=TRUE)/length(actual))
+@
+
+Next, we will specify building the model on a cluster of servers.
+
+<<usage_build_on_cluster, eval=FALSE>>=
+servers <- paste0("node", 31:40)
+model.wsrf <- wsrf(form, data=ds[train, vars], parallel=servers)
+@
+
+All we need is a character verctor specifying the hostnames of which
+nodes to use, or a named integer vector, whose values of the elements
+give how many threads to use for model building, in other words, how
+many trees built simultaneously.  More detail descriptions about
+\pkg{wsrf} are presented in.
+
+
+\bibliographystyle{plain}
+\bibliography{wsrfGuide}
+
+
+\end{document}

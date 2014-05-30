@@ -22,14 +22,6 @@ test <- setdiff(seq_len(nrow(ds)), train)
 # build model
 model.wsrf.1 <- wsrf(form, data=ds[train, vars])
 
-# view model
-print(model.wsrf.1, tree=1)
-summary(model.wsrf.1)
-summary(model.wsrf.1, tree=c(1,500))
-
 # evaluate
-strength(model.wsrf.1)
-correlation(model.wsrf.1)
 cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="response")
 actual <- ds[test, target]
-(accuracy.wsrf <- sum(cl==actual)/length(actual))

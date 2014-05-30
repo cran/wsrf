@@ -14,7 +14,7 @@
 }
 
 \usage{
-\method{oobErrorRate}{wsrf}(object, tree, \dots)
+\method{oobErrorRate}{wsrf}(object, tree)
 }
 
 \arguments{
@@ -25,7 +25,6 @@
       error rates of the exact trees specified by \code{tree}.  If
       TRUE, all error rates will be presented.  If FALSE or missing,
       the gross error rate for the forest will be given.}
-  \item{\dots}{other arguments to \code{oobErrorRate.wsrf}.}
 }
 
 \value{

@@ -14,8 +14,11 @@ predict.wsrf <- function(object,
   # and can also directly returns "aprob" or "waprob" correspondingly in terms of <type>
   # but "class" and "prob" will be treated as "votes",
   # so "class" and "prob" still need to be calculated in R below
-  
-  res <- .Call("predict", object, na.fail(newdata[object$vars]), type, PACKAGE="wsrf")
+
+  varlen <- length(object$names$variable)
+#  x <- setdiff(object$names$variable[-varlen], object$names$type[varlen])
+  x <- object$names$variable[c(-varlen, -varlen+1)]
+  res <- .Call("predict", object, na.fail(newdata[x]), type, PACKAGE="wsrf")
   names(res) <- rownames(newdata)
   res <- do.call(rbind, res)
   

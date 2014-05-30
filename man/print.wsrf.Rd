@@ -17,7 +17,8 @@
   \item{tree}{the index of a specific tree.  If missing, \code{print}
       will print the whole forest, which will take a long time for a
       big forest.}
-  \item{\dots}{other arguments to \code{print.wsrf}.}
+  \item{\dots}{Optional additional arguments. At present no additional
+  arguments are used.}
 }
 
 \note{ It will take quite amount of time printing the whole forest if

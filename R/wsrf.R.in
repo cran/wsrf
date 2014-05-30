@@ -5,7 +5,7 @@
     
     packageStartupMessage(wsrfDescription)
     packageStartupMessage(paste("Version", wsrfVersion))
-    packageStartupMessage("With parallel computing disabled")
+    packageStartupMessage("@VERSION_INFO@")
 #    packageStartupMessage("Type wsrfNews() to see new features/changes/bug fixes.")
 }
 

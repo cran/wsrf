@@ -277,7 +277,7 @@ SEXP predict(SEXP wrf, SEXP ds, SEXP type){
 	
 	TrainingSet* training_set = new TrainingSet();
 	training_set->set_attribute_value_mapper(attribute_value_mapper);
-    if(training_set->ProduceTrainingSetMatrixRcpp(ds_df) == FAIL){
+    if(training_set->ProduceTrainingSetMatrixRcpp(ds_df, true) == FAIL){
     	throw std::range_error("can't produce the training set !");
 	}
 	

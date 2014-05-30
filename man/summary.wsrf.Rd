@@ -20,7 +20,8 @@
   \item{tree}{ the index of a specific tree in the forest model.  If
       provided, \code{summary.wsrf} will give the summary of the exact
       tree in the forest.  }
-  \item{\dots}{other arguments to \code{summary.wsrf}.}
+  \item{\dots}{Optional additional arguments. At present no additional
+  arguments are used.}
 }
 
 \author{

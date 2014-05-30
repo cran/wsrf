@@ -22,6 +22,7 @@ private:
 	AttributeValue** value_matrix_;  // training set data matrix
 	AttributeValueMapper* attribute_value_mapper_;  // meta data holder
 	int training_set_num_;  // total number of instances in training set
+	bool isPredict;
 public:
 
 	~TrainingSet();
@@ -52,7 +53,7 @@ public:
 	 */
 	StatusCode ProduceTrainingSetMatrix(string file_path);
 	StatusCode split(const string&,char,vector<string>&);
-	StatusCode ProduceTrainingSetMatrixRcpp(const Rcpp::DataFrame& ds);
+	StatusCode ProduceTrainingSetMatrixRcpp(const Rcpp::DataFrame& ds, bool isPredict=false);
 
 
 	/*

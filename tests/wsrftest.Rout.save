@@ -49,62 +49,9 @@ Type 'q()' to quit R.
 > # build model
 > model.wsrf.1 <- wsrf(form, data=ds[train, vars])
 > 
-> # view model
-> print(model.wsrf.1, tree=1)
-Tree 1 has 31 nodes with error rate 0.208.
-1) root
- ..2) Pressure9am <= 1014.55
- .. ..3) Rainfall <= 6.5
- .. .. ..4) Humidity9am <= 77
- .. .. .. ..5) Pressure3pm <= 1005.35 Yes (0 1)
- .. .. .. ..6) Pressure3pm > 1005.35
- .. .. .. .. ..7) WindSpeed3pm <= 14
- .. .. .. .. .. ..8) Pressure9am <= 1012.15 No (1 0)
- .. .. .. .. .. ..9) Pressure9am > 1012.15 Yes (0 1)
- .. .. .. .. ..10) WindSpeed3pm > 14 No (1 0)
- .. .. ..11) Humidity9am > 77 Yes (0 1)
- .. ..12) Rainfall > 6.5 No (1 0)
- ..13) Pressure9am > 1014.55
- .. ..14) Sunshine <= 8.45
- .. .. ..15) Sunshine <= 8.3
- .. .. .. ..16) Pressure3pm <= 1016.1
- .. .. .. .. ..17) Humidity9am <= 72.5 Yes (0 1)
- .. .. .. .. ..18) Humidity9am > 72.5 No (1 0)
- .. .. .. ..19) Pressure3pm > 1016.1
- .. .. .. .. ..20) Humidity9am <= 94.5
- .. .. .. .. .. ..21) Temp3pm <= 7.75
- .. .. .. .. .. .. ..22) WindGustSpeed <= 42.5 No (1 0)
- .. .. .. .. .. .. ..23) WindGustSpeed > 42.5 No (0.5 0.5)
- .. .. .. .. .. ..24) Temp3pm > 7.75 No (1 0)
- .. .. .. .. ..25) Humidity9am > 94.5
- .. .. .. .. .. ..26) MinTemp <= 2.3 No (1 0)
- .. .. .. .. .. ..27) MinTemp > 2.3 Yes (0 1)
- .. .. ..28) Sunshine > 8.3
- .. .. .. ..29) WindSpeed9am <= 6.5 Yes (0 1)
- .. .. .. ..30) WindSpeed9am > 6.5 No (1 0)
- .. ..31) Sunshine > 8.45 No (1 0)
-> summary(model.wsrf.1)
-A Weighted Subspace Random Forest model with 500 trees.
-
-Out-of-Bag Error Rate: 0.1445312
-Strength: 0.6212449
-Correlation: 0.1864185
-
-> summary(model.wsrf.1, tree=c(1,500))
-Tree 1 has 31 nodes with error rate 0.208
-Tree 500 has 39 nodes with error rate 0.190
-> 
 > # evaluate
-> strength(model.wsrf.1)
- strength 
-0.6212449 
-> correlation(model.wsrf.1)
-correlation 
-  0.1864185 
 > cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="response")
 > actual <- ds[test, target]
-> (accuracy.wsrf <- sum(cl==actual)/length(actual))
-[1] 0.8454545
 > 
 > proc.time()
    user  system elapsed 

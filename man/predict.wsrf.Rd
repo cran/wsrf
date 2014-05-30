@@ -30,7 +30,8 @@
         \item{waprob}{the weighted average, weighted by the accuracy
             of the tree (waprob = scores * accuracy / sum(accuracy))}
         }}
-  \item{\dots}{other arguments to \code{predict.wsrf}.}
+  \item{\dots}{Optional additional arguments. At present no additional
+  arguments are used.}
 }
 
 \value{ a vector of length \code{nrow(newdata)} if given \code{type} of
