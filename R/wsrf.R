@@ -1,23 +1,14 @@
-.onAttach <- function(libname, pkgname) {
-    wsrfDescription <- "wsrf: An R Package for Scalable Weighted Subspace Random Forests."
-    wsrfVersion <- read.dcf(file=system.file("DESCRIPTION", package=pkgname),
-                            fields="Version")
-    
-    packageStartupMessage(wsrfDescription)
-    packageStartupMessage(paste("Version", wsrfVersion))
-    packageStartupMessage("With parallel computing disabled")
-#    packageStartupMessage("Type wsrfNews() to see new features/changes/bug fixes.")
-}
-
-
-wsrf <- function(formula,
-                 data,
-                 nvars,
-                 mtry,
-                 ntrees=500,
-                 weights=TRUE,
-                 parallel=TRUE, 
-                 na.action=na.fail)
+wsrf <- function(
+    formula,
+    data,
+    nvars,
+    mtry,
+    ntrees=500,
+    weights=TRUE,
+    parallel=TRUE,
+    na.action=na.fail,
+    importance=FALSE,
+    clusterlogfile)
 {
   # Determine the information provided by the formula.
 
@@ -30,7 +21,7 @@ wsrf <- function(formula,
   # the dataset.
 
   data <- as.data.frame(na.action(data[vars]))
-  
+
   # For the C++ code, when nvars=-1 then nvars will be set to (log_2(n)
   # + 1). Rather than relying on the C++ default, we set the default
   # value here, making it more clearly accessible to the R users.
@@ -57,105 +48,111 @@ wsrf <- function(formula,
     stop("The chosen number of variables is greater than actually available.")
 
   # Prepare to pass execution over to the suitable helper.
-  
-  nm    <- .get.names.info(data, target)
+
+  if (!is.factor(data[[target]]))
+    data[[target]] <- as.factor(data[[target]])
+  #nm    <- .get.names.info(data, target)
   seeds <- as.integer(runif(ntrees) * 10000000)
   
   # Determine what kind of parallel to perform. By default, when
   # parallel=TRUE, use 2 less than the number of cores available, or 1
   # core if there are only 2 cores.
-	
+
   if (is.logical(parallel) || is.numeric(parallel))
   {
     if (is.logical(parallel) && parallel)
     {
       parallel <- detectCores()-2
-      if (parallel < 1) parallel <- 1
+      if (is.na(parallel) || parallel < 1) parallel <- 1
     }
-    model <- .wsrf(data, nm, ntrees, nvars, weights, parallel, seeds)
+    model <- .wsrf(data, target, ntrees, nvars, weights, parallel, seeds, importance, FALSE)
   }
   else if (is.vector(parallel))
   {
-    model <- .clwsrf(data, nm, ntrees, nvars, weights, serverargs=parallel, seeds)
+    model <- .clwsrf(data, target, ntrees, nvars, weights, serverargs=parallel, seeds, importance, clusterlogfile)
   }
   else 
     stop ("Parallel must be logical, character, or numeric.")
-  
+
   class(model) <- "wsrf"
 
   return(model)
 }
 
-.wsrf <- function(data, nm, ntrees, nvars, weights, parallel, seeds, isPart=FALSE)
+
+.wsrf <- function(data, target, ntrees, nvars, weights, parallel, seeds, importance, ispart)
 {
-  model <- .Call("WeightedRandomForest", data, nm, ntrees, nvars,
-                 weights, parallel, seeds, isPart, PACKAGE="wsrf")
+  model <- .Call("wsrf", data, target, ntrees, nvars,
+                 weights, parallel, seeds, importance, ispart, PACKAGE="wsrf")
+  names(model) <- .WSRF_MODEL_NAMES
   return(model)
 }
 
-.localwsrf <- function(serverargs, data, nm, nvars, weights)
-{	
-  ntrees <- serverargs[1][[1]]
+
+.localwsrf <- function(serverargs, data, target, nvars, weights, importance)
+{
+  ntrees   <- serverargs[1][[1]]
   parallel <- serverargs[2][[1]]
-  seeds <- serverargs[3][[1]]
-  model <- .wsrf(data, nm, ntrees, nvars, weights, parallel, seeds, TRUE)
+  seeds    <- serverargs[3][[1]]
+
+  model <- .wsrf(data, target, ntrees, nvars, weights, parallel, seeds, importance, TRUE)
   return(model)
 }
 
-.clwsrf <- function(data, nm, ntrees, nvars, weights, serverargs, seeds)
+
+.clwsrf <- function(data, target, ntrees, nvars, weights, serverargs, seeds, importance, clusterlogfile)
 {
   # Multiple cores on multiple servers.
   # where serverargs like c("apollo9", "apollo10", "apollo11", "apollo12")
   # or c(apollo9=5, apollo10=8, apollo11=-1)
-  
+
+  determineCores <- function()
+  {
+    if (.Platform$OS.type == "windows") return(1)
+    
+    nthreads <- detectCores() - 2
+    if (nthreads > 0)
+      return(nthreads)
+    else
+      return(1)
+  }
+
   if (is.vector(serverargs, "character"))
   {
     nodes <- serverargs
-    cl <- makeCluster(nodes)
+
+    if (missing(clusterlogfile)) cl <- makeCluster(nodes)
+    else cl <- makeCluster(nodes, outfile=clusterlogfile)
+
     clusterEvalQ(cl, require(wsrf))
-    parallels <- unlist(clusterCall(cl, function()
-    {
-      if (.Platform$OS.type == "windows") return(1)
-      
-      nthreads <- detectCores() - 2
-      if (nthreads > 0)
-        return(nthreads)
-      else
-        return(1)
-    }))
+    parallels <- unlist(clusterCall(cl, determineCores))
   }
   else if (is.vector(serverargs, "numeric"))
   {
     nodes <- names(serverargs)
-    cl <- makeCluster(nodes)
+    
+    if (missing(clusterlogfile)) cl <- makeCluster(nodes)
+    else cl <- makeCluster(nodes, outfile=clusterlogfile)
+
     clusterEvalQ(cl, require(wsrf))
-    parallels <- unlist(clusterCall(cl, function()
-    {
-      if (.Platform$OS.type == "windows") return(1)
-      
-      nthreads <- detectCores() - 2
-      if (nthreads > 0)
-        return(nthreads)
-      else
-        return(1)
-    }))
+    parallels <- unlist(clusterCall(cl, determineCores))
     parallels <- ifelse(serverargs > 0, serverargs, parallels)
   }
   else
     stop ("Parallel must be a vector of mode character/numeric.")
-  
+
   nservers <- length(nodes)
-    
+
   # just make sure each node has different RNGs in C code, time is
   # part of the seed, so this call won't make a reproducible result
-    
+
   clusterSetRNGStream(cl)
-    
+
   # follow specification in "serverargs", calculate corresponding tree
   # number for each node
-    
+
   nTreesPerNode <- floor(ntrees / sum(parallels)) * parallels
-  nTreesLeft <- ntrees %% sum(parallels)
+  nTreesLeft    <- ntrees %% sum(parallels)
   #    cumsumParallels <- cumsum(parallels)
   #    leftPerNode <- ifelse(nTreesLeft >= cumsumParallels, parallels, 0)
   #    if (!(nTreesLeft %in% cumsumParallels)) {
@@ -165,86 +162,86 @@ wsrf <- function(formula,
   #        else
   #            leftPerNode[index] <- nTreesLeft - cumsumParallels[index - 1]
   #    }
-  
-  ones <- rep(1, length(parallels))
+
+  ones        <- rep(1, length(parallels))
   leftPerNode <- floor(nTreesLeft / sum(ones)) * ones
-  left <- nTreesLeft %% sum(ones)
+  left        <- nTreesLeft %% sum(ones)
   leftPerNode <- leftPerNode + c(rep(1, left), rep(0, length(parallels) - left))
-  
+
   nTreesPerNode <- nTreesPerNode + leftPerNode
   
   parallels <- parallels[which(nTreesPerNode > 0)]
   parallels <- as.integer(parallels)
+
   nTreesPerNode <- nTreesPerNode[which(nTreesPerNode > 0)]
   nTreesPerNode <- as.integer(nTreesPerNode)
   
   seedsPerNode <- split(seeds, rep(1:nservers, nTreesPerNode))
   
   forests <- parRapply(cl, cbind(nTreesPerNode, parallels, seedsPerNode),
-                       .localwsrf, data, nm, nvars, weights)
-  result <- Reduce(.merge.wsrf, forests)
+                       .localwsrf, data, target, nvars, weights, importance)
   stopCluster(cl)
+  model <- .reduce.wsrf(forests)
   
-  # "afterMerge" is used for calculating strength, etc.
-  result <- .Call("afterMerge", result, data, nm, PACKAGE="wsrf")
-  return(result)
+  # "afterReduceForCluster" is used for statistics.
+  .Call("afterReduceForCluster", model, data, target, PACKAGE="wsrf")
+
+  class(model) <- "wsrf"
+
+  return(model)
 }
 
-#get.names.info(data,target) function
-#create a data structure from data set as following for compatibility with the C++ code program
-#and avoid changing the c++ program
-#the following is an example of the data structure
-#
-# attributes.names              attributes.values
-# 1                  V1                     CONTINUOUS
-# 2                  V2                    FEMALE,MALE
-# 3                  V3 INNER_CITY,RURAL,SUBURBAN,TOWN
-# 4                  V4                     CONTINUOUS
-# 5                  V5                     CONTINUOUS
-# 6                  V6                         NO,YES
-# 7                  V7                         NO,YES
-# 8                  V8                         NO,YES
-# 9                  V9                         NO,YES
-# 10 CLASSIFY_ATTRIBUTE                             V9
-
-.get.names.info <- function(data, target)
-{
-  data[[target]] <- as.factor(data[[target]])
-  attributes.names <- names(data)
-  type <- sapply(data, class)	
-  attributes.values <- character()
-  index <- 1
-  for(var in type)
-  {
-    attribute.value <- ""
-    if("factor" %in% var)
-    {
-      attribute.values <- levels(data[[index]])
-      attribute.values.num <- length(attribute.values)
-      i <- 1
-      for(var_value in attribute.values)
-      {
-        if(i < attribute.values.num)
-        {
-          attribute.value <- paste(attribute.value, var_value, ",", sep="")
-        }
-        else
-        {
-           attribute.value <- paste(attribute.value, var_value, sep="")
-        }
-        i <- i+1
-      }
-    }
-    else
-    {
-      attribute.value <- "CONTINUOUS"
-    }
-    
-    index <- index + 1
-    attributes.values <- c(attributes.values, attribute.value)
-  }
-  attributes.names <- c(attributes.names, "CLASSIFY_ATTRIBUTE")
-  attributes.values <- c(attributes.values, target)
-
-  return(data.frame(attributes.names, attributes.values))
+.onAttach <- function(libname, pkgname) {
+  wsrfDescription <- "wsrf: An R Package for Scalable Weighted Subspace Random Forests."
+  wsrfVersion <- read.dcf(file=system.file("DESCRIPTION", package=pkgname),
+      fields="Version")
+  
+  packageStartupMessage(wsrfDescription)
+  packageStartupMessage(paste("Version", wsrfVersion))
+  packageStartupMessage("With parallel computing disabled")
+#  packageStartupMessage("Type wsrfNews() to see new features/changes/bug fixes.")
 }
+
+
+## All the names and indexes of the elements of the model returned by wsrf.
+
+.META                 <- "meta";               .META_IDX                 <- 1;
+.TARGET_DATA          <- "targetData";         .TARGET_DATA_IDX          <- 2;
+.TREES                <- "trees";              .TREES_IDX                <- 3;
+.TREE_OOB_ERROR_RATES <- "treeOOBErrorRates";  .TREE_OOB_ERROR_RATES_IDX <- 4;
+.OOB_SETS             <- "OOBSets";            .OOB_SETS_IDX             <- 5;
+.OOB_PREDICT_LABELS   <- "OOBPredictLabels";   .OOB_PREDICT_LABELS_IDX   <- 6;
+.TREE_IGR_IMPORTANCE  <- "treeIgrImportance";  .TREE_IGR_IMPORTANCE_IDX  <- 7;
+.PREDICTED            <- "predicted";          .PREDICTED_IDX            <- 8;
+.OOB_TIMES            <- "oob.times";          .OOB_TIMES_IDX            <- 9;
+.CONFUSION            <- "confusion";          .CONFUSION_IDX            <- 10;
+.IMPORTANCE           <- "importance";         .IMPORTANCE_IDX           <- 11;
+.IMPORTANCESD         <- "importanceSD";       .IMPORTANCESD_IDX         <- 12;
+.RF_OOB_ERROR_RATE    <- "RFOOBErrorRate";     .RF_OOB_ERROR_RATE_IDX    <- 13;
+.STRENGTH             <- "strength";           .STRENGTH_IDX             <- 14;
+.CORRELATION          <- "correlation";        .CORRELATION_IDX          <- 15;
+.C_S2                 <- "c_s2";               .C_S2_IDX                 <- 16;
+.WEIGHTS              <- "useweights";         .WEIGHTS_IDX              <- 17;
+.MTRY                 <- "mtry";               .MTRY_IDX                 <- 18;
+
+.WSRF_MODEL_SIZE      <- 18
+.WSRF_MODEL_NAMES     <- c(.META,
+                           .TARGET_DATA,
+                           .TREES,
+                           .TREE_OOB_ERROR_RATES,
+                           .OOB_SETS,
+                           .OOB_PREDICT_LABELS,
+                           .TREE_IGR_IMPORTANCE,
+                           .PREDICTED,
+                           .OOB_TIMES,
+                           .CONFUSION,
+                           .IMPORTANCE,
+                           .IMPORTANCESD,
+                           .RF_OOB_ERROR_RATE,
+                           .STRENGTH,
+                           .CORRELATION,
+                           .C_S2,
+                           .WEIGHTS,
+                           .MTRY)
+
+

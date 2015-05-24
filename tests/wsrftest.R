@@ -3,25 +3,43 @@ suppressMessages(library(rattle))
 suppressMessages(library(randomForest))
 
 # prepare parameters
-ds <- get("weather")
-dim(ds)
-names(ds)
+library("wsrf")
+library("rattle")
+library("randomForest")
+ds <- weather
 target <- "RainTomorrow"
-id     <- c("Date", "Location")
-risk   <- "RISK_MM"
-ignore <- c(id, if (exists("risk")) risk) 
-vars   <- setdiff(names(ds), ignore)
+ignore <- c("Date", "Location", "RISK_MM")
+vars <- setdiff(names(ds), ignore)
 if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
 ds[target] <- as.factor(ds[[target]])
-(tt <- table(ds[target]))
-form <- as.formula(paste(target, "~ ."))
-set.seed(42)
-train <- sample(nrow(ds), 0.7*nrow(ds))
-test <- setdiff(seq_len(nrow(ds)), train)
+(form <- as.formula(paste(target, "~ .")))
+set.seed(500)
+length(train <- sample(nrow(ds), 0.7*nrow(ds)))
+length(test  <- setdiff(seq_len(nrow(ds)), train))
+
 
 # build model
-model.wsrf.1 <- wsrf(form, data=ds[train, vars])
+model.wsrf       <- wsrf(form, data=ds[train, vars])
+model.wsrf.nw    <- wsrf(form, data=ds[train, vars], weights=FALSE)
+
+# Note:
+# The line below cannot be executed successfully on Windows 7 because
+# of compatibility with previous Windows version.  I am not sure if it
+# is the problem of R itself or that of Windows.
+
+# model.wsrf.nw.vi <- wsrf(form, data=ds[train, vars], weights=FALSE, importance=TRUE)
+model.subset     <- subset.wsrf(model.wsrf, 1:200)
+model.combine    <- combine.wsrf(model.wsrf, model.wsrf.nw)
+
 
 # evaluate
-cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="response")
-actual <- ds[test, target]
+
+# Note:
+# 32bit system and 64bit system will have different results, however,
+# if random seed is fixed, the same results will be outputs in the
+# same system.
+
+cl         <- predict(model.wsrf,     newdata=ds[test, vars], type="class")
+cl.nw      <- predict(model.wsrf.nw,  newdata=ds[test, vars], type="class")
+cl.subset  <- predict(model.subset,   newdata=ds[test, vars], type="class")
+cl.combine <- predict(model.combine,  newdata=ds[test, vars], type="class")

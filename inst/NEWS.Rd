@@ -1,45 +1,117 @@
 \name{NEWS}
 \title{News for Package 'wsrf'}
 
-\newcommand{\cpkg}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+\newcommand{\pkglink}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
+
+\section{Changes in wsrf version 1.5.0 (2015-05-24)}{
+
+  \subsection{New Features}{
+    \itemize{
+
+      \item Add new function \code{subset} to get a sub-forest from a
+      \pkg{wsrf} model.
+      
+      \item Add new function \code{combine} to merge multiple \pkg{wsrf}
+      models into bigger one.
+
+      \item Add \code{confusion}, \code{oot.times}, \code{predicted},
+      \code{useweights}, \code{mtry} in the \pkg{wsrf} model list.
+
+      \item Add \code{clusterlogfile} in the parameter list of function
+      \code{wsrf} for debug.
+
+    }
+  }
+
+  \subsection{Changes}{
+    \itemize{
+
+      \item Function \code{predict.wsrf} returns NAs when there are
+      missing values in \code{newdata}.
+
+      \item Remove function \code{summary.wsrf}, moving its
+      functionality into \code{print.wsrf}, so that the default outputs
+      of \code{print.wsrf} gives a summary of the model.
+
+      \item Tree structure printed by function \code{print.wsrf} is
+      slightly different from previous version: Decisions from the same
+      test node (internal node) have the same item number.
+
+      \item Function \code{oobErrorRate} is renamed into
+      \code{oob.error.rate} and made as generic.
+
+    }
+  }
+
+  \subsection{Enhancements}{
+    \itemize{
+
+      \item Refactor code, making rooms for future modifications: Remove
+      unused code; Redefine some classes.
+
+      \item Operate on R objects directly in C++ code instead of copied
+      ones.
+
+      \item Improve time performance.
+
+    }
+  }
+
+  \subsection{Bug Fixes}{
+    \itemize{
+
+      \item Correct weighted random sampling.
+
+    }
+  }
+
+  \subsection{Misc}{
+    \itemize{
+
+      \item Replace \code{srand()} with \verb{R} \emph{RNG} functions.
+
+    }
+  }
+
+}
 
 \section{Changes in wsrf version 1.4.0 (2014-05-28)}{
 
 
-  \subsection{NEW FEATURES}{
+  \subsection{New Features}{
     \itemize{
 
       \item Add new function \code{wsrfParallelInfo} for querying the
-      underlying parallel implementation (parallel or not)
-      
+      underlying parallel implementation (parallel or not).
+
     }
   }
 
   \subsection{BUG FIXES}{
     \itemize{
-      
+
       \item The predict method requires a dummy outcome column to be in the
-      new data (Thank Max Knhn for reporting this bug)
-      
+      new data (Thank Max Knhn for reporting this bug).
+
     }
   }
 
-  \subsection{MINOR CHANGES}{
+  \subsection{Minor Changes}{
     \itemize{
 
-      \item Adapt R's make variable \env{CXX\_STD} to configure
-      installation
-      
-      \item List packages used by vignettes code in DESCRIPTION
+      \item Adapt R's make variable \env{CXX_STD} to configure
+      installation.
+
+      \item List packages used by vignettes code in DESCRIPTION.
     }
   }
 
-  \subsection{DOCUMENTATION}{
+  \subsection{Documentation}{
     \itemize{
 
       \item Let R to build the vignettes so that it can be visible on
-      \cpkg{wsrf}
-      
+      \pkglink{wsrf}.
+
     }
   }
 

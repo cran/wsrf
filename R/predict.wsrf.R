@@ -7,45 +7,49 @@ predict.wsrf <- function(object,
 
   if (missing(type)) type <- "class"
   if (type=="response") type <- "class"
-  
+
   type <- match.arg(type)
+
+  # The C code for predict does not handle missing values. So handle
+  # them here by removing them from the dataset and then add in, in
+  # the correct places, NA as the results from predict.
+
+  complete <- complete.cases(newdata)
+  rnames   <- rownames(newdata)
+  newdata  <- newdata[complete,]
   
   # function "predict()" in C returns "votes" by default, 
   # and can also directly returns "aprob" or "waprob" correspondingly in terms of <type>
   # but "class" and "prob" will be treated as "votes",
   # so "class" and "prob" still need to be calculated in R below
 
-  varlen <- length(object$names$variable)
-#  x <- setdiff(object$names$variable[-varlen], object$names$type[varlen])
-  x <- object$names$variable[c(-varlen, -varlen+1)]
-  res <- .Call("predict", object, na.fail(newdata[x]), type, PACKAGE="wsrf")
-  names(res) <- rownames(newdata)
-  res <- do.call(rbind, res)
+  res <- .Call("predict", object, newdata, type, PACKAGE="wsrf")
+  colnames(res) <- rownames(newdata)
+  res <- t(res)
+
+  # Deal with observations with missing values.
+  
+  nc  <- ncol(res)
+  nr  <- sum(!complete)
+  nas <- data.frame(matrix(rep(NA, nr*nc), ncol=nc), row.names=rnames[!complete])
+  colnames(nas) <- colnames(res)
+  fin <- rbind(res, nas)
+  fin <- fin[order(as.integer(rownames(fin))),]
   
   if (type %in% c("aprob", "waprob"))
-      return(res)
-  else
-      votes <- res
-
-  # Check expected conditions
-
-  max.votes <- unique(apply(votes, 1, sum))
-  if(length(max.votes)!=1)
-    stop("Differening number of votes found?")
-  
-  # Return the result.
-
-  classes <- factor(colnames(votes)[apply(votes, 1, which.max)],
-                    levels=colnames(votes))
-
-  probs <- votes/max.votes
-  
-  if (type == "class")
-    return(classes)
-  else if (type == "prob")
-    return(probs)
+    return(fin)
   else if (type == "vote")
-    return(votes)
-
+    return(fin)
+  else if (type == "prob")
+  {
+    max.votes <- unique(apply(res, 1, sum))
+    if(length(max.votes)!=1) stop("Differening number of votes found?")
+    return(fin/max.votes)
+  }
+  else if (type == "class")
+  {
+    cl <- factor(rep(NA, length(complete)), levels=colnames(res))
+    cl[complete] <- factor(colnames(res)[apply(res, 1, which.max)], levels=colnames(res))
+    return(cl)
+  }
 }
-

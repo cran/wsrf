@@ -1,7 +1,7 @@
-\name{oobErrorRate.wsrf}
+\name{oob.error.rate.wsrf}
 
-\alias{oobErrorRate}
-\alias{oobErrorRate.wsrf}
+\alias{oob.error.rate}
+\alias{oob.error.rate.wsrf}
 
 \concept{out-of-bag error rate}
 
@@ -14,7 +14,7 @@
 }
 
 \usage{
-\method{oobErrorRate}{wsrf}(object, tree)
+\method{oob.error.rate}{wsrf}(object, tree, ...)
 }
 
 \arguments{
@@ -25,6 +25,7 @@
       error rates of the exact trees specified by \code{tree}.  If
       TRUE, all error rates will be presented.  If FALSE or missing,
       the gross error rate for the forest will be given.}
+  \item{...}{not used.}
 }
 
 \value{

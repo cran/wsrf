@@ -1,4 +1,3 @@
-
 ## ----setup, echo=FALSE, message=FALSE------------------------------------
 library(knitr)
 opts_chunk$set(tidy=FALSE)
@@ -57,32 +56,26 @@ source=function(x, options)
 })
 
 
+## ----eval=FALSE----------------------------------------------------------
+#  install.packages("wsrf")
 
 ## ----eval=FALSE----------------------------------------------------------
-## install.packages("wsrf")
-
-
-## ----eval=FALSE----------------------------------------------------------
-## install.packages("wsrf", configure.args="--enable-c11=yes")
-
+#  install.packages("wsrf", configure.args="--enable-c11=yes")
 
 ## ----eval=FALSE----------------------------------------------------------
-## install.packages("wsrf",
-##                  configure.args="--enable-c11=no")
-
+#  install.packages("wsrf",
+#                   configure.args="--enable-c11=no")
 
 ## ----eval=FALSE----------------------------------------------------------
-## install.packages("wsrf",
-##                  configure.args="--with-boost-include=<Boost include path>
-##                                  --with-boost-lib=<Boost lib path>")
-
+#  install.packages("wsrf",
+#                   configure.args="--with-boost-include=<Boost include path>
+#                                   --with-boost-lib=<Boost lib path>")
 
 ## ----usage_load, message=FALSE-------------------------------------------
 library(rattle)
 ds <- weather
 dim(ds)
 names(ds)
-
 
 ## ----usage_prepare-------------------------------------------------------
 target <- "RainTomorrow"
@@ -93,17 +86,14 @@ ignore <- c(id, if (exists("risk")) risk)
 (vars <- setdiff(names(ds), ignore))
 dim(ds[vars])
 
-
 ## ----message=FALSE-------------------------------------------------------
 library(randomForest)
 if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
 ds[target] <- as.factor(ds[[target]])
 (tt <- table(ds[target]))
 
-
 ## ------------------------------------------------------------------------
 (form <- as.formula(paste(target, "~ .")))
-
 
 ## ------------------------------------------------------------------------
 seed <- 42
@@ -111,32 +101,28 @@ set.seed(seed)
 length(train <- sample(nrow(ds), 0.7*nrow(ds)))
 length(test <- setdiff(seq_len(nrow(ds)), train))
 
-
 ## ----eval=FALSE----------------------------------------------------------
-## wsrf(formula,
-##      data,
-##      ntrees=500,
-##      nvars=NULL,
-##      weights=TRUE,
-##      parallel=TRUE)
-
+#  wsrf(formula,
+#       data,
+#       ntrees=500,
+#       nvars=NULL,
+#       weights=TRUE,
+#       parallel=TRUE)
 
 ## ----usage_build_by_default, message=FALSE-------------------------------
 library(wsrf)
 model.wsrf <- wsrf(form, data=ds[train, vars])
-print(model.wsrf, summary=TRUE)
-
+print(model.wsrf)
+print(model.wsrf, 1)
 
 ## ------------------------------------------------------------------------
 strength(model.wsrf)
 correlation(model.wsrf)
 
-
 ## ----usage_evaluate------------------------------------------------------
 cl <- predict(model.wsrf, newdata=ds[test, vars], type="class")
 actual <- ds[test, target]
 (accuracy.wsrf <- sum(cl == actual, na.rm=TRUE)/length(actual))
-
 
 ## ----compare_with_cforest_randomForest, message=FALSE--------------------
 library(randomForest)
@@ -152,9 +138,7 @@ cl <- predict(model.cforest, newdata=ds[test, vars], type="response")
 actual <- ds[test, target]
 (accuracy.cforest <- sum(cl == actual, na.rm=TRUE)/length(actual))
 
-
 ## ----usage_build_on_cluster, eval=FALSE----------------------------------
-## servers <- paste0("node", 31:40)
-## model.wsrf <- wsrf(form, data=ds[train, vars], parallel=servers)
-
+#  servers <- paste0("node", 31:40)
+#  model.wsrf <- wsrf(form, data=ds[train, vars], parallel=servers)
 

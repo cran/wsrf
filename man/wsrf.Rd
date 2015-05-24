@@ -20,7 +20,7 @@
 \usage{
 
 wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE, 
-                 parallel=TRUE, na.action=na.fail)
+                 parallel=TRUE, na.action=na.fail, importance=FALSE, clusterlogfile)
 
 }
 
@@ -30,25 +30,30 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 
   \item{data}{a data frame in which to interpret the variables named in
           the formula.}
-  
-  \item{ntrees}{number of trees to build on each server; By default, 500}
-  
-  \item{nvars, mtry}{number of variables to choose, with Breiman's
-      default for random forests being the integer less than or equal
-      to \eqn{log_2(ninputs) + 1}.  For compatibility with other
-      \code{R} packages like \code{randomForest}, both \code{nvars}
-      and \code{mtry} are supported, however, only one of them should
-      be specified.}
 
-  \item{weights}{logical.  \code{TRUE} for weighted subspace
-      selection, which is the default; \code{FALSE} for random
-      selection.}
+  \item{ntrees}{number of trees to build on each server; By default,
+  500}
 
-  \item{na.action}{indicate the behaviour when encountering NA values
-      in \code{data}.}
-  
+  \item{nvars, mtry}{number of variables to choose, by default, being
+      the integer less than or equal to \eqn{log_2(ninputs) + 1}.  For
+      compatibility with other \code{R} packages like
+      \code{randomForest}, both \code{nvars} and \code{mtry} are
+      supported, however, only one of them should be specified.}
+
+  \item{weights}{logical.  \code{TRUE} for weighted subspace selection,
+      which is the default; \code{FALSE} for random selection, and the
+      trees are based on C4.5.}
+
+  \item{na.action}{indicate the behaviour when encountering NA values in
+      \code{data}.}
+
   \item{parallel}{whether to run multiple cores (TRUE), nodes, or
-  sequentially (FALSE).}
+      sequentially (FALSE).}
+
+  \item{importance}{should importance of predictors be assessed? }
+
+  \item{clusterlogfile}{character.  The pathname of the log file when
+      building model in a cluster.  For debug.}
 
 }
 
@@ -60,8 +65,24 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 
 \value{
   
-  An object of class \code{wsrf}.
+  An object of class \pkg{wsrf}, which is a list with the following
+  components:
 
+  \item{confusion}{the confusion matrix of the prediction (based on OOB
+  data).}
+
+  \item{oob.times}{number of times cases are `out-of-bag' (and thus used
+  in computing OOB error estimate)}
+
+  \item{predicted}{the predicted values of the input data based on
+    out-of-bag samples.}
+
+  \item{useweights}{logical.  Whether weighted subspace selcetion is
+  used?  NULL if the model is obtained by combining multiple \pkg{wsrf}
+  model and one of them has different value of 'useweights'.}
+
+  \item{mtry}{integer.  The number of variables to be chosen when
+    spliting a node.}
 }
 
 \examples{
@@ -82,24 +103,23 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   vars   <- setdiff(names(ds), ignore)
   if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
   ds[target] <- as.factor(ds[[target]])
-  (tt <- table(ds[target]))
+  (tt  <- table(ds[target]))
   form <- as.formula(paste(target, "~ ."))
   set.seed(42)
   train <- sample(nrow(ds), 0.7*nrow(ds))
-  test <- setdiff(seq_len(nrow(ds)), train)
+  test  <- setdiff(seq_len(nrow(ds)), train)
   
   # build model
-  model.wsrf.1 <- wsrf(form, data=ds[train, vars])
+  model.wsrf <- wsrf(form, data=ds[train, vars])
   
   # view model
-  print(model.wsrf.1, tree=1)
-  summary(model.wsrf.1)
-  summary(model.wsrf.1, tree=c(1,500))
+  print(model.wsrf)
+  print(model.wsrf, tree=1)
   
   # evaluate
-  strength(model.wsrf.1)
-  correlation(model.wsrf.1)
-  cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="response")
+  strength(model.wsrf)
+  correlation(model.wsrf)
+  cl <- predict(model.wsrf, newdata=ds[test, vars], type="response")
   actual <- ds[test, target]
   (accuracy.wsrf <- sum(cl==actual)/length(actual))
 }

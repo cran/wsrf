@@ -251,7 +251,8 @@ weighted subspace random forest or random forest; TRUE for
 <<usage_build_by_default, message=FALSE>>=
 library(wsrf)
 model.wsrf <- wsrf(form, data=ds[train, vars])
-print(model.wsrf, summary=TRUE)
+print(model.wsrf)
+print(model.wsrf, 1)
 @
 
 Here in the output, \textit{Strength} and \textit{Correlation} are two

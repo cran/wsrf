@@ -1,134 +1,143 @@
-/*
- * IGR.cpp
- *
- *  Created on: 25 Jul, 2012
- *      Author: meng
- */
-
 #include "IGR.h"
-#include<iostream>
-IGR::IGR(int seed){
-	this->seed = seed;
+
+IGR::IGR(const vector<double>& gain_ratio, int nvars, unsigned seed)
+    : gain_ratio_vec_(gain_ratio), seed_(seed), weights_(gain_ratio.size()+1), wst_(gain_ratio.size()+1) {
+    int n = gain_ratio.size();
+    if (nvars == -1) nvars = log(n) / LN_2 + 1;
+    nvars_ = nvars >= n ? n : nvars;
 }
 
-int IGR::FindInternal(int random_integer, vector<int>& weights){
-	int size = weights.size();
-	int left = 0;
-	int right = 0;
-	int i;
-	for(i = 0; i < size; ++ i){
-		left = right;
-		right += weights.at(i);
-		if(random_integer >= left && random_integer <= right){
-			return i;
-		}
-	}
-	//may be the largest right is smaller RAND_MAX,because double to int may lose information
-	return i -1;
+int IGR::weightedSampling(int rand_num) {
+    int i = 1;
+    while (rand_num > weights_[i]) {
+        rand_num -= weights_[i];
+        i <<= 1;
+        if (rand_num > wst_[i]) {
+            rand_num -= wst_[i];
+            i++;
+        }
+    }
+
+    int res = i-1;
+    int w = weights_[i];
+    weights_[i] = 0;
+
+    while (i != 0) {
+        wst_[i] -= w;
+        i >>= 1;
+    }
+
+    return res;
+
+//    //may be the largest right is smaller RAND_MAX,because double to int may lose information
+//    return n - 1;
 }
 
 /*
  * generate an integer list of size <size> according to probability
  * that is, select <size> variables by their weights
  */
-vector<int> IGR::GenerateRandomIntegerByProbability(int size, vector<double>& probability){
+vector<int> IGR::getRandomWeightedVars() {
 
-	vector<int> result;
-	if (size >= int(probability.size())) {
-		for (int i = 0; i < int(probability.size()); i++)
-			result.push_back(i);
-		return result;
-	}
+    //TODO: If possible, make similar RNG codes into a single function.
 
-	vector<int> toInt;
-	vector<double>::iterator it;
-	for(it = probability.begin(); it != probability.end(); ++ it){
-		toInt.push_back((int)((*it)*RAND_MAX));
-	}
+    int n = weights_.size()-1;
+    vector<int> result(nvars_ >= n ? n : nvars_);
+
+    if (nvars_ >= n) {
+        for (int i = 0; i < n; i++)
+            result[i] = i;
+        return result;
+    }
 
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
 #ifdef WSRF_USE_BOOST
-	boost::random::uniform_int_distribution<int> uid(0, RAND_MAX);
-	boost::random::mt19937 re(seed);
+    boost::random::mt19937 re(seed_);
 #else
-	uniform_int_distribution<int> uid{0, RAND_MAX};
-	default_random_engine re {seed};
+    default_random_engine re {seed_};
 #endif
-	for(int i = 0; i < size; ++ i)
-		result.push_back(FindInternal(uid(re), toInt));
 #else
+    Rcpp::RNGScope rngScope;
+#endif
 
-	int i;
-	for(i = 0; i < size; ++ i){
-		srand(seed + i);
-		result.push_back(FindInternal(rand(), toInt));
-	}
+    for(int i = 0; i < nvars_; ++ i) {
+
+#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
+#ifdef WSRF_USE_BOOST
+        boost::random::uniform_int_distribution<int> uid(0, wst_[1]-1);
+#else
+        uniform_int_distribution<int> uid {0, wst_[1]-1};
 #endif
-	return result;
+        result[i] = weightedSampling(uid(re));
+#else
+        result[i] = weightedSampling(unif_rand() * wst_[1]);
+#endif
+
+    }
+
+    return result;
 }
 
 /*
  * calculate weights of all variables according to their gain ratios
  * the results are in this->weights_
  */
-void IGR::CalculateWeight(vector<double> gain_ratio, int subspaceSize, volatile bool* pInterrupt) {
-	if (subspaceSize == -1)
-		subspaceSize = log((double) gain_ratio.size()) / log(2.0) + 1;
-	this->m_ = subspaceSize >= int(gain_ratio.size()) ? int(gain_ratio.size()) : subspaceSize;
-	double sum = 0.0;
-	vector<double> vec;
-	double temp;
-	vector<double>::iterator it;
-	for (it = gain_ratio.begin(); it != gain_ratio.end(); ++it) {
+void IGR::normalizeWeight(volatile bool* pInterrupt) {
+
+    double sum = 0;
+    int n = gain_ratio_vec_.size();
+
+    for (int i = 0, j = 1; i < n; i++, j++) {
+
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-		if (*pInterrupt)
-			return;
+        if (*pInterrupt)
+            return;
 #else
-		// check interruption
-		if (check_interrupt())
-		    throw interrupt_exception("The random forest model building is interrupted.");
+        // check interruption
+        if (check_interrupt()) throw interrupt_exception("The random forest model building is interrupted.");
 #endif
-		temp = pow(*it, 0.5);
-		vec.push_back(temp);
-		sum += temp;
-	}
-	if (sum != 0.0) {
-		for (it = vec.begin(); it != vec.end(); ++it) {
-			this->weights_.push_back(*it / sum);
-		}
-	} else {
-		int i;
-		int size = gain_ratio.size();
-		for (i = 0; i < size; i++) {
-			this->weights_.push_back(1.0 / (double) size);
-		}
-	}
+
+        weights_[j] = sqrt(gain_ratio_vec_[i]);
+        sum += weights_[j];
+    }
+
+    if (sum != 0) {
+        for (int i = 1; i <= n; i++) {
+            weights_[i] /= sum;
+            int temp = weights_[i] * RAND_MAX;
+            weights_[i] = temp;
+            wst_[i] = temp;
+        }
+    } else {
+        int temp = RAND_MAX / (double) n;
+        for (int i = 1; i <= n; i++) {
+            weights_[i] = temp;
+            wst_[i] = temp;
+        }
+    }
+
+    for (int i = n; i > 1; i--) {
+        wst_[i>>1] += wst_[i];
+    }
 }
 
 /*
  * select the most weighted variable from < this->m_ > variables that
  * are randomly picked from all varialbes according to their weights
  */
-int IGR::GetSelectedResult(){
-	vector<int> alternative_result = GenerateRandomIntegerByProbability(this->m_, this->weights_);
-	int max;
-	bool is_max_set = false;
-	int rand_num;
-	int i;
-	for(i = 0; i < this->m_; i ++){
-		rand_num = alternative_result.at(i);
-		if(is_max_set){
-			if(this->weights_[rand_num] >= this->weights_[max]){
-				max = rand_num;
-			}
-		}else{
-			max = rand_num;
-			is_max_set = true;
-		}
-	}
-	if(is_max_set){
-		return max;
-	}else{
-		return -1;
-	}
+int IGR::getSelectedIdx() {
+    const vector<int>& wrs_vec = getRandomWeightedVars();
+    int max;
+    bool is_max_set = false;
+    for (int i = 0, rand_num; i < nvars_; i++) {
+        rand_num = wrs_vec[i];
+        if (is_max_set) {
+            if (gain_ratio_vec_[rand_num] >= gain_ratio_vec_[max]) max = rand_num;
+        } else {
+            max = rand_num;
+            is_max_set = true;
+        }
+    }
+
+    return max;
 }

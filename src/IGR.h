@@ -1,18 +1,10 @@
-/*
- * IGR.h
- *
- *  Created on: 25 Jul, 2012
- *      Author: meng
- */
-
 #ifndef IGR_H_
 #define IGR_H_
-#include<ctime>
-#include<cstdio>
-#include<cstdlib>
-#include<vector>
-#include<cmath>
-#include"utility.h"
+
+#include <vector>
+#include <cmath>
+#include <cstdlib>
+#include <iterator>
 
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
 #ifdef WSRF_USE_BOOST
@@ -22,22 +14,29 @@
 #include<random>
 #endif
 #endif
-using namespace std;
 
+#include "utility.h"
+
+using namespace std;
 
 class IGR {
 private:
-	int m_; //subspace size
-	vector<double> weights_;
+    int nvars_;  //subspace size
+    unsigned seed_;
 
-	int seed;
+    vector<double> weights_;
+    vector<int>    wst_;
 
-	int FindInternal(int random_integer, vector<int>& weights);
-	vector<int> GenerateRandomIntegerByProbability(int size, vector<double>& probability);
+    const vector<double>& gain_ratio_vec_;
+
+
+    int weightedSampling(int random_integer);
+    vector<int> getRandomWeightedVars();
 public:
-	IGR(int seed);
-	void CalculateWeight(vector<double> gain_ratio, int subspaceSize, volatile bool* pInterrupt);
-	int GetSelectedResult();
+    IGR(const vector<double>& gain_ratio, int nvars, unsigned seed);
+
+    void normalizeWeight(volatile bool* pInterrupt);
+    int  getSelectedIdx();
 };
 
 #endif /* IGR_H_ */
