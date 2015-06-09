@@ -7,12 +7,11 @@
 #include <boost/foreach.hpp>
 #endif
 
-#include <stddef.h>
-#include <iterator>
-#include <stdexcept>
-#include <vector>
+#include <algorithm>
+#include <iostream>
+#include <sstream>
 
-#include "utility.h"
+#include "meta_data.h"
 
 class Node {
 private:
@@ -43,9 +42,10 @@ private:
 
 public:
 
-    Node (NodeType type, int nobs, int nchild = 0)
-        : type_(type),
-          nobs_(nobs) {
+    Node (NodeType type, int nobs, int nchild = 0) {
+        type_ = type;
+        nobs_ = nobs;
+
         // If it is internal node, initialize children node vector.
         if (nchild != 0) child_nodes_ = vector<Node*>(nchild);
     }
@@ -209,7 +209,8 @@ public:
 
             node_info.push_back(label_);
 
-            for (int i = 0; i < label_freq_count_.size(); i++)
+            int n = label_freq_count_.size();
+            for (int i = 0; i < n; i++)
                 node_info.push_back(label_freq_count_[i]);
 
         } else {

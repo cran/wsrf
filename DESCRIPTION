@@ -1,8 +1,8 @@
 Package: wsrf
 Type: Package
 Title: Weighted Subspace Random Forest for Classification
-Version: 1.5.0
-Date: 2015-05-24
+Version: 1.5.14
+Date: 2015-06-09
 Authors@R: c(person("Qinghan", "Meng", role="aut"),
              person("He", "Zhao", email="Simon.Yansen.Zhao@gmail.com", role=c("aut", "cre")),
              person("Graham", "Williams", email="graham.williams@togaware.com", role="aut"),
@@ -26,11 +26,11 @@ Suggests: rattle (>= 2.6.26), randomForest (>= 4.6.7), party (>=
         1.0.7), stringr (>= 0.6.2), knitr (>= 1.5)
 VignetteBuilder: knitr
 NeedsCompilation: yes
-Packaged: 2015-05-24 13:58:57 UTC; simon
+Packaged: 2015-06-09 04:27:18 UTC; simon
 Author: Qinghan Meng [aut],
   He Zhao [aut, cre],
   Graham Williams [aut],
   Junchao Lv [ctb],
   Baoxun Xu [aut]
 Repository: CRAN
-Date/Publication: 2015-05-24 18:56:09
+Date/Publication: 2015-06-09 08:25:50

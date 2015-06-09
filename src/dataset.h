@@ -1,14 +1,6 @@
 #ifndef DATASET_H_
 #define DATASET_H_
 
-#include <map>
-#include <vector>
-#include <cstdlib>
-#include <iterator>
-#include <stdexcept>
-#include <string>
-#include <utility>
-
 #include "utility.h"
 #include "meta_data.h"
 
@@ -23,16 +15,16 @@ private:
     Rcpp::IntegerVector data_;
 
 public:
-    TargetData (Rcpp::DataFrame ds, MetaData* meta_data)
-        : nlabels_(meta_data->nlabels()),
-          nobs_(ds.nrows()) {
+    TargetData (Rcpp::DataFrame ds, MetaData* meta_data) {
+        nlabels_ = meta_data->nlabels();
+        nobs_    = ds.nrows();
 
         data_       = Rcpp::as<Rcpp::IntegerVector>(ds[meta_data->targVarIdx()]);
         targ_array_ = INTEGER(data_);
     }
 
-    TargetData (Rcpp::List targdata)
-        : nlabels_(Rcpp::as<int>(targdata[NLABELS])) {
+    TargetData (Rcpp::List targdata) {
+        nlabels_ = Rcpp::as<int>(targdata[NLABELS]);
 
         data_ = Rcpp::as<Rcpp::IntegerVector>(targdata[TRAIN_TARGET_LABELS]);
         targ_array_ = INTEGER(data_);

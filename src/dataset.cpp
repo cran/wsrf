@@ -1,10 +1,10 @@
 #include "dataset.h"
 
-Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training)
-    : nobs_(ds.nrows()),
-      training_(training),
-      data_ptr_vec_(ds.size()-1),
-      meta_data_(meta_data) {
+Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training) {
+    training_     = training;
+    nobs_         = ds.nrows();
+    data_ptr_vec_ = vector<void*>(ds.size()-1);
+    meta_data_    = meta_data;
 
     if (nobs_ == 0) throw std::range_error("No observations in the dataset.");
 
@@ -20,7 +20,7 @@ Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training)
         int n = 1;
         nlogn_vec_ = vector<double>(ds.nrows()+1);
         for (vector<double>::iterator iter = ++(nlogn_vec_.begin()); iter != nlogn_vec_.end(); iter++, n++) {
-            (*iter) = n * log(n) / LN_2;
+            (*iter) = n * log((double)n) / LN_2;
         }
 
     } else {

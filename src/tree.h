@@ -2,15 +2,9 @@
 #define TREE_H_
 
 #include <iostream>
-#include <vector>
 #include <queue>
-#include <iterator>
-#include <map>
-#include <stdexcept>
-#include <utility>
 
 #include "c4_5_var_selector.h"
-#include "utility.h"
 #include "dataset.h"
 #include "node.h"
 

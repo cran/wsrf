@@ -1,15 +1,6 @@
 #ifndef RFORESTS_H_
 #define RFORESTS_H_
 
-#include <iterator>
-#include <map>
-#include <string>
-#include <utility>
-#include <exception>
-#include <cstdlib>
-#include <fstream>
-#include <vector>
-
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
 #ifdef WSRF_USE_BOOST
 #include <boost/foreach.hpp>
@@ -29,11 +20,7 @@
 #endif
 #endif
 
-#include "meta_data.h"
-#include "utility.h"
 #include "tree.h"
-#include "node.h"
-#include "dataset.h"
 
 using namespace std;
 
@@ -102,6 +89,18 @@ public:
 
     }
 
+    void predictProbVec (Dataset* data, int index, double* out_iter) {
+        /*
+         * Predicted label frequency by all trees for data[index].
+         */
+        for (vector<Tree*>::iterator iter = tree_vec_.begin(); iter != tree_vec_.end(); ++iter)
+            out_iter[(*iter)->predictLabel(data, index)]++;
+
+        for (int i = 0; i < nlabels_; i++)
+            out_iter[i] /= ntrees_;
+
+    }
+
     void predictAprobVec (Dataset* data, int index, double* out_iter) {
         for (vector<Tree*>::iterator iter = tree_vec_.begin(); iter != tree_vec_.end(); ++iter) {
             vector<double> classDistributions = (*iter)->predictLeafNode(data, index)->getLabelDstr();
@@ -130,6 +129,7 @@ public:
     }
 
     Rcpp::NumericMatrix predictMatrix (Dataset* data, predictor pred);
+    Rcpp::IntegerVector predictClassVec (Dataset* data);
 
     void saveModel (Rcpp::List& wsrf_R);
     void saveMeasures (Rcpp::List& wsrf_R);

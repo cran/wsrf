@@ -1,19 +1,6 @@
 #ifndef C4_5_VAR_SELECTOR_H_
 #define C4_5_VAR_SELECTOR_H_
 
-#include <map>
-#include <vector>
-#include <algorithm>
-#include <iterator>
-#include <stdexcept>
-#include <utility>
-#include <functional>
-#include <cstdlib>
-#include <cmath>
-#include <cstdio>
-
-#include "dataset.h"
-#include "utility.h"
 #include "IGR.h"
 #include "var_selector.h"
 
@@ -32,7 +19,6 @@ private:
     const static int MIN_NODE_SIZE_;  // threshold for minimum child node size
 
     unsigned seed_;
-    bool     ok_;    // attribute selection progress flag
     double   info_;  // entropy of this node
 
     map<int, double> info_gain_map_;    // information gain for each variable

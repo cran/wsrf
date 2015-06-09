@@ -3,7 +3,9 @@
 const int C4p5Selector::MIN_NODE_SIZE_ = 2;  //TODO: Make it variable.
 
 C4p5Selector::C4p5Selector (Dataset* train_set, TargetData* targdata, MetaData* meta_data, const vector<int>& obs_vec, const vector<int>& var_vec, unsigned seed)
-    : VarSelector(train_set, targdata, meta_data, obs_vec, var_vec), seed_(seed), ok_(false), info_(calcEntropy(obs_vec)) {
+    : VarSelector(train_set, targdata, meta_data, obs_vec, var_vec) {
+    seed_ = seed;
+    info_ = calcEntropy(obs_vec);
 }
 
 /*
@@ -36,13 +38,14 @@ void C4p5Selector::handleDiscVar (int var_idx) {
         }
     }
 
+    double info_gain = info_ - subinfo/nobs_;
+    if (info_gain <= 0) return;
+
     split_info = (train_set_->nlogn(nobs_) -  split_info) / nobs_;
-    subinfo /= nobs_;
 
     cand_splits_map_[var_idx].swap(mapper);
-    info_gain_map_[var_idx] = info_ - subinfo;
+    info_gain_map_[var_idx] = info_gain;
     split_info_map_[var_idx] = split_info;
-    ok_ = true;
 }
 
 template<class T>
@@ -74,7 +77,7 @@ void C4p5Selector::handleContVar (int var_idx) {
     T* var_array = train_set_->getVar<T>(var_idx);
     double current_value = var_array[sorted_obs_vec[min_split-1]];
     double subinfo;
-    double split_value;
+    double split_value = -1;
     bool subinfo_is_set = false;
     int pos;
     for (int i = min_split; i < nobs_ - min_split; ++i) {
@@ -103,6 +106,11 @@ void C4p5Selector::handleContVar (int var_idx) {
     }
 
     if (subinfo_is_set) {
+        double info_gain = info_ - subinfo;
+        if (info_gain <= 0) return;
+
+        info_gain_map_[var_idx] = info_gain;
+
 //        T* vararray = (T *) ((*train_set_)[var_idx]);
 //        double split_value = (vararray[sorted_obs_vec[pos]] + vararray[sorted_obs_vec[pos + 1]]) / 2;
         double split_info = (train_set_->nlogn(nobs_) - train_set_->nlogn(pos + 1) - train_set_->nlogn(nobs_ - pos - 1)) / nobs_;
@@ -111,9 +119,7 @@ void C4p5Selector::handleContVar (int var_idx) {
         map<int, vector<int> > mapper = train_set_->splitPosition(sorted_obs_vec, pos);
         cand_splits_map_[var_idx].swap(mapper);
 
-        info_gain_map_[var_idx] = info_ - subinfo;
         split_value_map_[var_idx] = split_value;
-        ok_ = true;
     }
 }
 
@@ -139,7 +145,7 @@ vector<int> C4p5Selector::getRandomVars (vector<int> var_vec, int nselect) {
 
     // the result attribute list can't be repeatable
     int nleft = var_vec.size();
-    if (nselect == -1) nselect = log(nleft)/LN_2 + 1;
+    if (nselect == -1) nselect = log((double)nleft)/LN_2 + 1;
 
     if (nselect >= nleft) return var_vec;
 
@@ -179,7 +185,8 @@ vector<int> C4p5Selector::getRandomVars (vector<int> var_vec, int nselect) {
 }
 
 void C4p5Selector::calcInfos (const vector<int>& var_vec, volatile bool* pInterrupt) {
-    for (int i = 0; i < var_vec.size(); i++) {
+    int n = var_vec.size();
+    for (int i = 0; i < n; i++) {
 
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
         if (*pInterrupt)
@@ -203,7 +210,7 @@ double C4p5Selector::averageInfoGain () {
         total_info_gain += iter->second;
 
     // the average_info_gain minus 0.001 to avoid the situation where all the info gain is the same
-    double average_info_gain = total_info_gain / (double) ((info_gain_map_.size())) - 0.001;
+    double average_info_gain = total_info_gain / (double) ((info_gain_map_.size())) - 0.000001;
     return average_info_gain;
 }
 
@@ -214,7 +221,7 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
      */
     calcInfos(var_vec_, pInterrupt);
 
-    if (ok_ == false) {
+    if (info_gain_map_.empty()) {
         setResult(-1, res);
         return;
     }
@@ -225,7 +232,6 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
      * following code is IGR weighting method
      */
     double gain_ratio;
-    bool is_set_attribute = false;
     vector<int> cand_var_vec;
     vector<double> cand_gain_ratio_vec;
     for (map<int, double>::iterator iter = info_gain_map_.begin(); iter != info_gain_map_.end(); ++iter) {
@@ -235,7 +241,6 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
                 gain_ratio = iter->second / split_info;
                 cand_var_vec.push_back(iter->first);
                 cand_gain_ratio_vec.push_back(gain_ratio);
-                is_set_attribute = true;
             }
         }
     }
@@ -258,7 +263,11 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
         gain_ratio = split_info > 0 ? info_gain_map_.begin()->second / split_info : NA_REAL;
     } else {
 
+#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
         IGR igr(cand_gain_ratio_vec, nvars, seed_);
+#else
+        IGR igr(cand_gain_ratio_vec, nvars);
+#endif
         igr.normalizeWeight(pInterrupt);
 
         int index = igr.getSelectedIdx();
@@ -294,7 +303,7 @@ void C4p5Selector::doSelection (int nvars, VarSelectRes& res, volatile bool* pIn
 
     calcInfos(subvar_vec, pInterrupt);
 
-    if (ok_ == false) {
+    if (info_gain_map_.empty()) {
         setResult(-1, res);
         return;
     }
@@ -303,8 +312,8 @@ void C4p5Selector::doSelection (int nvars, VarSelectRes& res, volatile bool* pIn
      * find the best variable
      */
     double average_info_gain = averageInfoGain();
-    double gain_ratio;
-    int vindex;
+    double gain_ratio = -1;
+    int vindex = -1;
     bool is_set_gain_ratio = false;
     for (map<int, double>::iterator iter = info_gain_map_.begin(); iter != info_gain_map_.end(); ++iter) {
 

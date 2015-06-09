@@ -11,13 +11,6 @@ computation is used to take advantage of multi-core machines and
 clusters of machines to build random forest models from high
 dimensional data with reduced elapsed times.
 
-## Note
-
-Because of the back-compatibility of Windows or some other problems
-that we currently don't know, the package will crash R on Windows,
-users of Windows need to run R in Windows XP compatibility mode to
-avoid crash.
-
 ## Documentation & Examples
 
 The package ships with a pdf vignette including more details and a few

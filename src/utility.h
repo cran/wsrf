@@ -55,7 +55,7 @@ inline bool check_interrupt() {
     return (R_ToplevelExec(check_interrupt_impl, NULL) == FALSE);
 }
 
-const double LN_2 = log(2);
+const double LN_2 = log((double)2);
 
 
 // wsrf$

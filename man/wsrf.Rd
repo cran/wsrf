@@ -59,7 +59,16 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 
 \details{
 
-  See Xu, Huang, Williams, Wang, and Ye (2012) for details
+  See Xu, Huang, Williams, Wang, and Ye (2012) for more details of
+  the algorithm.
+
+  Currently, \pkg{wsrf} can only be used for classification.  When
+  \code{weights=FALSE}, C4.5-based trees (Quinlan (1993)) are grown by
+  \code{wsrf}, where binary split is used for continuous predictors
+  (variables) and \emph{k}-way split for categorical ones.  For
+  continuous predictors, each of the values themselves is used as split
+  points, no discretization used.  The only stopping condition for split
+  is the minimum node size is 2.
 
 }
 
@@ -125,10 +134,16 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 }
 
 \references{
-  Xu B, Huang JZ, Williams G, Wang Q, Ye Y (2012). "Classifying very
-high-dimensional data with random forests built from small subspaces."
-International Journal of Data Warehousing and Mining (IJDWM), 8(2),
-44-63.
+  
+  Xu B, Huang JZ, Williams G, Wang Q, Ye YM
+  (2012). "Classifying very high-dimensional data with random forests built from small subspaces."
+  \emph{International Journal of Data Warehousing and Mining (IJDWM)},
+  8(2), 44-63.
+
+  Quinlan
+  J. R. (1993). "C4.5: Programs for Machine Learning". \emph{Morgan
+  Kaufmann}.
+  
 }
 
 \author{

@@ -1,8 +1,6 @@
 #include "meta_data.h"
 
-MetaData::MetaData (Rcpp::DataFrame data, string targ_name)
-    : nvars_(data.size()-1),
-      targ_var_name_(targ_name) {
+MetaData::MetaData (Rcpp::DataFrame data, string targ_name) {
     /*
      * Obtain meta data directly from data set.
      *
@@ -11,6 +9,8 @@ MetaData::MetaData (Rcpp::DataFrame data, string targ_name)
      * Assume that the target variable is the last variable,
      * and no unused variables are in argument <data>
      */
+    nvars_         = data.size() - 1;
+    targ_var_name_ = targ_name;
 
     if (nvars_ == 0) throw std::range_error("Dataset is empty.");
 
@@ -66,11 +66,7 @@ MetaData::MetaData (Rcpp::DataFrame data, string targ_name)
         feature_vars_[i] = i;
 }
 
-MetaData::MetaData (Rcpp::List md)
-    : nvars_(Rcpp::as<int>(md[NVARS])),
-      targ_var_idx_(Rcpp::as<int>(md[TARG_IDX])),
-      targ_var_name_(Rcpp::as<string>(md[TARG_NAME])),
-      var_types_(Rcpp::as<vector<int> >(md[VAR_TYPES])) {
+MetaData::MetaData (Rcpp::List md) {
     /*
      * Construct meta data from R object.
      *
@@ -84,6 +80,10 @@ MetaData::MetaData (Rcpp::List md)
      * [[4]] ---- Variable type vector
      * [[5]] ---- Discrete variable value list
      */
+    nvars_         = Rcpp::as<int>(md[NVARS]);
+    targ_var_idx_  = Rcpp::as<int>(md[TARG_IDX]);
+    targ_var_name_ = Rcpp::as<string>(md[TARG_NAME]);
+    var_types_     = type_vec(Rcpp::as<vector<int> >(md[VAR_TYPES]));
 
     feature_vars_ = idx_vec(nvars_);
     var_names_    = name_vec(nvars_);

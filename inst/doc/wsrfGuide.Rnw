@@ -1,7 +1,7 @@
 \documentclass[11pt,a4paper]{article}
 
 %\VignetteEngine{knitr::knitr}
-%\VignetteIndexEntry{Quick Start Guide}
+%\VignetteIndexEntry{Quick Start Guide for wsrf}
 
 <<setup, echo=FALSE, message=FALSE>>=
 library(knitr)

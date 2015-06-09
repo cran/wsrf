@@ -1,35 +1,40 @@
 #include "tree.h"
 
-Tree::Tree (Dataset* train_set, TargetData* targdata, MetaData* meta_data, unsigned seed, vector<int>* pbagging_vec, vector<int>* poob_vec)
-    : train_set_(train_set),
-      targ_data_(targdata),
-      meta_data_(meta_data),
-      seed_(seed),
-      pbagging_vec_(pbagging_vec),
-      poob_vec_(poob_vec),
-      nnodes_(0),
-      node_id_(0),
-      tree_oob_error_rate_(NA_REAL),
-      label_oob_error_rate_(meta_data->nlabels(), 0),
-      tree_IGR_VIs_(meta_data->nvars(), 0),
-      root_(NULL) {
+Tree::Tree (Dataset* train_set, TargetData* targdata, MetaData* meta_data, unsigned seed, vector<int>* pbagging_vec, vector<int>* poob_vec) {
+
+    train_set_    = train_set;
+    targ_data_    = targdata;
+    meta_data_    = meta_data;
+    seed_         = seed;
+    pbagging_vec_ = pbagging_vec;
+    poob_vec_     = poob_vec;
+    nnodes_       = 0;
+    node_id_      = 0;
+    root_         = NULL;
+
+    tree_oob_error_rate_  = NA_REAL;
+    label_oob_error_rate_ = vector<double>(meta_data->nlabels(), 0);
+    tree_IGR_VIs_         = vector<double>(meta_data->nvars(), 0);
+
     resetPerm(true);
 }
 
-Tree::Tree (const vector<vector<double> >& node_infos, MetaData* meta_data, double tree_oob_error_rate)
-    : train_set_(NULL),
-      targ_data_(NULL),
-      meta_data_(meta_data),
-      node_id_(0),
-      poob_vec_(NULL),
-      pbagging_vec_(NULL),
-      tree_oob_error_rate_(tree_oob_error_rate),
-      seed_(NA_REAL) {
+Tree::Tree (const vector<vector<double> >& node_infos, MetaData* meta_data, double tree_oob_error_rate) {
     /*
      * Reconstruct the tree from <node_infos>.
      *
      * See Tree::save() for details.
      */
+
+    train_set_    = NULL;
+    targ_data_    = NULL;
+    meta_data_    = meta_data;
+    node_id_      = 0;
+    poob_vec_     = NULL;
+    pbagging_vec_ = NULL;
+    seed_         = NA_INTEGER;
+
+    tree_oob_error_rate_ = tree_oob_error_rate;
 
     queue<Node*> noparent_nodes;
     nnodes_ = node_infos.size();
@@ -265,7 +270,7 @@ void Tree::calcOOBMeasures (bool importance) {
         perm_is_var_used_ = vector<bool>(nvars, false);
         perm_var_data_    = vector<double>(train_set_->nobs());
         tree_perm_VIs_    = vector<double>((nlabels+1) * nvars, 0);
-        vector<int> row_indexes (nlabels);  // Mark the index of each row for matrix of size (nlabels+1) * nvars.
+        vector<int> row_indexes (nlabels+1);  // Mark the index of each row for matrix of size (nlabels+1) * nvars.
         for (int i = 0, row = 0; i < nlabels+1; row += nvars, i++)
             row_indexes[i] = row;
 

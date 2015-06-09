@@ -3,6 +3,41 @@
 
 \newcommand{\pkglink}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in wsrf version 1.5.14 (2015-06-09)}{
+
+  \subsection{Bug Fixes}{
+    \itemize{
+
+      \item Negative information gain when splitting nodes leads to
+      \code{-nan} when normalized by \code{sqrt()}.
+
+      \item No-matched predicted results when predict type is
+      "\code{prob}" (Thank \emph{Erich Studerus} for reporting this
+      bug).
+
+      \item Fix a bug when assessing variable importance: Vector out of
+      range access.
+
+    }
+  }
+
+  \subsection{Misc}{
+    \itemize{
+
+      \item Update documentation: Make it clear that the internal
+      algorithm used.
+
+      \item Move all predict functionality from \code{R} into \code{C++}
+      code.
+
+      \item Correct all compilation warnings on Windows, Linux, and OS X
+      and errors from memtest.
+
+    }
+  }
+
+}
+
 \section{Changes in wsrf version 1.5.0 (2015-05-24)}{
 
   \subsection{New Features}{
@@ -68,7 +103,7 @@
   \subsection{Misc}{
     \itemize{
 
-      \item Replace \code{srand()} with \verb{R} \emph{RNG} functions.
+      \item Replace \code{srand()} with \code{R} \emph{RNG} functions.
 
     }
   }
@@ -90,8 +125,8 @@
   \subsection{BUG FIXES}{
     \itemize{
 
-      \item The predict method requires a dummy outcome column to be in the
-      new data (Thank Max Knhn for reporting this bug).
+      \item The predict method requires a dummy outcome column to be in
+      the new data (Thank \emph{Max Knhn} for reporting this bug).
 
     }
   }

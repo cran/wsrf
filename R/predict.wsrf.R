@@ -17,39 +17,46 @@ predict.wsrf <- function(object,
   complete <- complete.cases(newdata)
   rnames   <- rownames(newdata)
   newdata  <- newdata[complete,]
+
+  hasmissing <- !all(complete)
+  nobs       <- length(complete)
   
   # function "predict()" in C returns "votes" by default, 
   # and can also directly returns "aprob" or "waprob" correspondingly in terms of <type>
   # but "class" and "prob" will be treated as "votes",
   # so "class" and "prob" still need to be calculated in R below
 
+  # .Call("predict") returns a factor vector of labels or 
+  # a numeric matrix of nclass * nobservations with labels as rownames.
+
   res <- .Call("predict", object, newdata, type, PACKAGE="wsrf")
-  colnames(res) <- rownames(newdata)
-  res <- t(res)
+  if (type != "class") res <- t(res)
 
   # Deal with observations with missing values.
-  
-  nc  <- ncol(res)
-  nr  <- sum(!complete)
-  nas <- data.frame(matrix(rep(NA, nr*nc), ncol=nc), row.names=rnames[!complete])
-  colnames(nas) <- colnames(res)
-  fin <- rbind(res, nas)
-  fin <- fin[order(as.integer(rownames(fin))),]
-  
-  if (type %in% c("aprob", "waprob"))
-    return(fin)
-  else if (type == "vote")
-    return(fin)
-  else if (type == "prob")
+
+  if (hasmissing)
   {
-    max.votes <- unique(apply(res, 1, sum))
-    if(length(max.votes)!=1) stop("Differening number of votes found?")
-    return(fin/max.votes)
+    if (type == "class")
+    {
+      cl <- factor(rep(NA, nobs), levels=levels(res))
+      cl[complete] <- res
+      names(cl) <- rnames
+      return(cl)
+    }
+    else
+    {
+      fin <- matrix(NA_real_, nrow=nobs, ncol=ncol(res))
+      fin[complete, ] <- res
+      rownames(fin) <- rnames
+      colnames(fin) <- colnames(res)
+      return(fin)
+    }
   }
-  else if (type == "class")
-  {
-    cl <- factor(rep(NA, length(complete)), levels=colnames(res))
-    cl[complete] <- factor(colnames(res)[apply(res, 1, which.max)], levels=colnames(res))
-    return(cl)
-  }
+
+  if (type == "class")
+    names(res) <- rnames
+  else
+    rownames(res) <- rnames
+
+  return(res)
 }

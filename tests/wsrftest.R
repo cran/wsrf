@@ -21,13 +21,7 @@ length(test  <- setdiff(seq_len(nrow(ds)), train))
 # build model
 model.wsrf       <- wsrf(form, data=ds[train, vars])
 model.wsrf.nw    <- wsrf(form, data=ds[train, vars], weights=FALSE)
-
-# Note:
-# The line below cannot be executed successfully on Windows 7 because
-# of compatibility with previous Windows version.  I am not sure if it
-# is the problem of R itself or that of Windows.
-
-# model.wsrf.nw.vi <- wsrf(form, data=ds[train, vars], weights=FALSE, importance=TRUE)
+model.wsrf.nw.vi <- wsrf(form, data=ds[train, vars], weights=FALSE, importance=TRUE)
 model.subset     <- subset.wsrf(model.wsrf, 1:200)
 model.combine    <- combine.wsrf(model.wsrf, model.wsrf.nw)
 
@@ -36,7 +30,7 @@ model.combine    <- combine.wsrf(model.wsrf, model.wsrf.nw)
 
 # Note:
 # 32bit system and 64bit system will have different results, however,
-# if random seed is fixed, the same results will be outputs in the
+# if random seed is fixed, the same results will be presented in the
 # same system.
 
 cl         <- predict(model.wsrf,     newdata=ds[test, vars], type="class")

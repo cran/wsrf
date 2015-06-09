@@ -1,9 +1,20 @@
 #include "IGR.h"
 
+#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
 IGR::IGR(const vector<double>& gain_ratio, int nvars, unsigned seed)
-    : gain_ratio_vec_(gain_ratio), seed_(seed), weights_(gain_ratio.size()+1), wst_(gain_ratio.size()+1) {
+#else
+IGR::IGR(const vector<double>& gain_ratio, int nvars)
+#endif
+    : gain_ratio_vec_(gain_ratio) {
+
+    weights_ = vector<double>(gain_ratio.size()+1);
+    wst_     = vector<int>(gain_ratio.size()+1);
+#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
+    seed_    = seed;
+#endif
+
     int n = gain_ratio.size();
-    if (nvars == -1) nvars = log(n) / LN_2 + 1;
+    if (nvars == -1) nvars = log((double)n) / LN_2 + 1;
     nvars_ = nvars >= n ? n : nvars;
 }
 
@@ -127,7 +138,7 @@ void IGR::normalizeWeight(volatile bool* pInterrupt) {
  */
 int IGR::getSelectedIdx() {
     const vector<int>& wrs_vec = getRandomWeightedVars();
-    int max;
+    int max = -1;
     bool is_max_set = false;
     for (int i = 0, rand_num; i < nvars_; i++) {
         rand_num = wrs_vec[i];

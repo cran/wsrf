@@ -1,8 +1,6 @@
 #ifndef METADATA_H_
 #define METADATA_H_
 
-#include <string>
-
 #include "utility.h"
 
 using namespace std;

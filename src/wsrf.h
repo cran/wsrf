@@ -1,17 +1,6 @@
 #ifndef WSRF_H
 #define WSRF_H
 
-#include <iterator>
-#include <map>
-#include <stdexcept>
-#include <string>
-#include <vector>
-#include <Rcpp.h>
-
-#include "utility.h"
-#include "meta_data.h"
-#include "dataset.h"
-#include "tree.h"
 #include "rforest.h"
 
 /*

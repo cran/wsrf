@@ -1,10 +1,6 @@
 #ifndef VAR_SELECTOR_H_
 #define VAR_SELECTOR_H_
 
-#include <map>
-#include <vector>
-
-#include "utility.h"
 #include "dataset.h"
 
 using namespace std;
@@ -22,12 +18,12 @@ protected:
 public:
 
     VarSelector (Dataset* train_set, TargetData* targdata, MetaData* meta_data, const vector<int>& obs_vec, const vector<int>& var_vect)
-        : train_set_(train_set),
-          targ_data_(targdata),
-          meta_data_(meta_data),
-          obs_vec_(obs_vec),
-          var_vec_(var_vect),
-          nobs_(obs_vec.size()) {
+        : obs_vec_(obs_vec),
+          var_vec_(var_vect) {
+        nobs_ = obs_vec.size();
+        train_set_ = train_set;
+        targ_data_ = targdata;
+        meta_data_ = meta_data;
     }
 
 };

@@ -1,45 +1,50 @@
 #include "rforest.h"
 
-RForest::RForest (Dataset* train_set, TargetData* targdata, MetaData* meta_data, int ntrees, int nvars, bool weights, bool importance, SEXP seeds)
-    : train_set_(train_set),
-      targ_data_(targdata),
-      meta_data_(meta_data),
-      ntrees_(ntrees),
-      mtry_(nvars),
-      weights_(weights),
-      tree_seeds_((unsigned int*) INTEGER(seeds)),
-      tree_vec_(ntrees),
-      bagging_set_(ntrees, vector<int>(train_set->nobs(), -1)),
-      oob_set_vec_(ntrees),
-      nlabels_(meta_data->nlabels()),
-      importance_(importance),
-      rf_strength_(NA_REAL),
-      rf_correlation_(NA_REAL),
-      rf_oob_error_rate_(NA_REAL),
-      c_s2_(NA_REAL),
-      emr2_(NA_REAL) {
+RForest::RForest (Dataset* train_set, TargetData* targdata, MetaData* meta_data, int ntrees, int nvars, bool weights, bool importance, SEXP seeds) {
     /*
      * For training.
      */
+    train_set_         = train_set;
+    targ_data_         = targdata;
+    meta_data_         = meta_data;
+    ntrees_            = ntrees;
+    mtry_              = nvars;
+    weights_           = weights;
+    tree_seeds_        = (unsigned int*) INTEGER(seeds);
+    nlabels_           = meta_data->nlabels();
+    importance_        = importance;
+    rf_strength_       = NA_REAL;
+    rf_correlation_    = NA_REAL;
+    rf_oob_error_rate_ = NA_REAL;
+    c_s2_              = NA_REAL;
+    emr2_              = NA_REAL;
+
+    tree_vec_    = vector<Tree*>(ntrees);
+    bagging_set_ = vector<vector<int> >(ntrees, vector<int>(train_set->nobs(), -1));
+    oob_set_vec_ = vector<vector<int> >(ntrees);
 }
 
-RForest::RForest (Rcpp::List& wsrf_R, MetaData* meta_data, TargetData* targdata)
-    : train_set_(NULL),
-      targ_data_(targdata),
-      meta_data_(meta_data),
-      nlabels_(meta_data->nlabels()),
-      importance_(false),
-      tree_seeds_(NULL),
-      rf_strength_(NA_REAL),
-      rf_correlation_(NA_REAL),
-      rf_oob_error_rate_(NA_REAL),
-      c_s2_(NA_REAL),
-      emr2_(NA_REAL) {
+RForest::RForest (Rcpp::List& wsrf_R, MetaData* meta_data, TargetData* targdata) {
     /*
      * Construct forest from R.
      *
      * For merge, split and prediction.
      */
+
+    importance_        = false;
+    tree_seeds_        = NULL;
+    rf_strength_       = NA_REAL;
+    rf_correlation_    = NA_REAL;
+    rf_oob_error_rate_ = NA_REAL;
+    c_s2_              = NA_REAL;
+    emr2_              = NA_REAL;
+    mtry_              = -1;
+    weights_           = false;
+
+    train_set_ = NULL;
+    targ_data_ = targdata;
+    meta_data_ = meta_data;
+    nlabels_   = meta_data->nlabels();
 
 //    mtry_       = Rf_isNull(wsrf_R[MTRY_IDX]) ? -2 : Rcpp::as<int>(wsrf_R[MTRY_IDX]);
 //    weights_    = Rf_isNull(wsrf_R[WEIGHTS_IDX]) ? false: Rcpp::as<bool>(wsrf_R[WEIGHTS_IDX]);
@@ -237,6 +242,22 @@ Rcpp::NumericMatrix RForest::predictMatrix (Dataset* data, predictor pred) {
 
 }
 
+Rcpp::IntegerVector RForest::predictClassVec (Dataset* data) {
+    int nobs    = data->nobs();
+    int nlabels = meta_data_->nlabels();
+
+    Rcpp::NumericMatrix res_mat = predictMatrix(data, &RForest::predictLabelFreqCount);
+    Rcpp::IntegerVector res_vec(nobs);
+
+    double* iter = REAL(SEXP(res_mat));
+    for (int i = 0; i < nobs; iter += nlabels, i++)
+        res_vec[i] = distance(iter, max_element(iter, iter+nlabels))+1;
+
+    res_vec.attr("levels") = meta_data_->getLabelNames();
+    res_vec.attr("class") = "factor";
+    return res_vec;
+}
+
 void RForest::collectBasicStatistics () {
 
     int nvars = meta_data_->nvars();
@@ -290,7 +311,7 @@ void RForest::calcOOBConfusionErrorRateAndStrength () {
             oob_confusion_matrix_[class_err_idx + actual_label]++;
 
             // For strength.
-            int max_j;
+            int max_j = -1;
             for (int label = 0, max_num = -1; label < nlabels_; ++label)
                 if (label != actual_label && numbers[label] > max_num) {
                     max_j = label;
@@ -417,7 +438,8 @@ void RForest::saveMeasures (Rcpp::List& wsrf_R) {
 
     vector<string> labelnames = meta_data_->getLabelNames();
 
-    for (int i = 0; i < oob_predict_label_vec_.size(); i++)
+    int n = oob_predict_label_vec_.size();
+    for (int i = 0; i < n; i++)
         oob_predict_label_vec_[i]++;  // R factor levels starts with 1.
     Rcpp::IntegerVector predict_vec = Rcpp::wrap(oob_predict_label_vec_);
     predict_vec.attr("levels") = Rcpp::wrap(labelnames);

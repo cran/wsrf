@@ -14,7 +14,6 @@
 #endif
 
 
-#include<unistd.h>
 using namespace std;
 
 /*
@@ -33,7 +32,6 @@ SEXP wsrf (
     ) {
     BEGIN_RCPP
 
-        int             nthreads    = Rcpp::as<int>(parallelSEXP);
         bool            ispart      = Rcpp::as<bool>(ispartSEXP);
 
         Rcpp::DataFrame ds           (dsSEXP);
@@ -53,6 +51,7 @@ SEXP wsrf (
 
 
 #if defined WSRF_USE_BOOST || defined WSRF_USE_C11
+        int nthreads       = Rcpp::as<int>(parallelSEXP);
 #ifdef WSRF_USE_BOOST
         int nCoresMinusTwo = boost::thread::hardware_concurrency() - 2;
 #else
@@ -189,8 +188,12 @@ SEXP predict (SEXP wsrfSEXP, SEXP dsSEXP, SEXP typeSEXP) {
             return rf.predictMatrix(&test_set, &RForest::predictAprobVec);
         } else if (type == "waprob") {
             return rf.predictMatrix(&test_set, &RForest::predictWAprobVec);
-        } else {
+        } else if (type == "prob") {
+            return rf.predictMatrix(&test_set, &RForest::predictProbVec);
+        } else if (type == "vote") {
             return rf.predictMatrix(&test_set, &RForest::predictLabelFreqCount);
+        } else {
+            return rf.predictClassVec(&test_set);
         }
 
     END_RCPP
