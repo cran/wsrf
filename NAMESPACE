@@ -1,5 +1,6 @@
-import(Rcpp)
-import(parallel)
+import("stats")
+import("parallel")
+import("Rcpp")
 useDynLib(wsrf)
 exportPattern("^[[:alpha:]]+")
 

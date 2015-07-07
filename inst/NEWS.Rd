@@ -3,6 +3,35 @@
 
 \newcommand{\pkglink}{\href{http://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in wsrf version 1.5.24 (2015-07-07)}{
+
+  \subsection{Bug Fixes}{
+    \itemize{
+
+      \item Add missing imports to correct the NOTEs from
+      \href{http://developer.r-project.org/blosxom.cgi/R-devel/NEWS/2015/06/29#n2015-06-29}{the
+	newly added check item of R-devel on 2015-06-29}.
+
+      \item Correct the URLs of CRAN package pages to their canonical
+      form in the documentation.
+
+    }
+  }
+
+  \subsection{Documentation}{
+    \itemize{
+
+      \item Add more examples in the manual.
+
+      \item Update documentaion.
+
+      \item Change vignette from Rnw to Rmd.
+
+    }
+  }
+
+}
+
 \section{Changes in wsrf version 1.5.14 (2015-06-09)}{
 
   \subsection{Bug Fixes}{

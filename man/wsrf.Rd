@@ -13,7 +13,8 @@
 
 \description{
   
-  Build weighted subspace decision trees to construct a forest.
+  Build weighted subspace C4.5-based decision trees to construct a
+  forest.
   
 }
 
@@ -95,14 +96,10 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 }
 
 \examples{
-  \dontshow{
-    library(wsrf)
-    library(rattle)
-    library(randomForest)
-  }
-  
-  # prepare parameters
-  ds <- get("weather")
+  library("wsrf")
+
+  # Prepare parameters.
+  ds <- rattle::weather
   dim(ds)
   names(ds)
   target <- "RainTomorrow"
@@ -110,7 +107,7 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   risk   <- "RISK_MM"
   ignore <- c(id, if (exists("risk")) risk) 
   vars   <- setdiff(names(ds), ignore)
-  if (sum(is.na(ds[vars]))) ds[vars] <- na.roughfix(ds[vars])
+  if (sum(is.na(ds[vars]))) ds[vars] <- randomForest::na.roughfix(ds[vars])
   ds[target] <- as.factor(ds[[target]])
   (tt  <- table(ds[target]))
   form <- as.formula(paste(target, "~ ."))
@@ -118,14 +115,14 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   train <- sample(nrow(ds), 0.7*nrow(ds))
   test  <- setdiff(seq_len(nrow(ds)), train)
   
-  # build model
+  # Build model.
   model.wsrf <- wsrf(form, data=ds[train, vars])
   
-  # view model
+  # View model.
   print(model.wsrf)
   print(model.wsrf, tree=1)
   
-  # evaluate
+  # Evaluate.
   strength(model.wsrf)
   correlation(model.wsrf)
   cl <- predict(model.wsrf, newdata=ds[test, vars], type="response")
