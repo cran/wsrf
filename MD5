@@ -1,4 +1,4 @@
-9cd473c8a19e4f9a57dc7adea47921d4 *DESCRIPTION
+937290437d4e041421e847ed1c909fa5 *DESCRIPTION
 3134eb68679e3ecc0b29876fdeeba138 *NAMESPACE
 f83c008050c8314999cdb5b8832c297f *R/combine.wsrf.R
 237e50262c2a4d3d33ce9b1790cc0f54 *R/correlation.wsrf.R
@@ -14,15 +14,15 @@ aa73cde8a4433481da0de24537489194 *R/wsrf.R
 47f70854d51598e577a5d89c716e4296 *R/wsrfParallelInfo.R
 7db551c5b5d1ab6a4c7ec75bb975ad83 *R/wsrfParallelInfo.R.in
 bae34b878869d9a5f08aabae6b465b7e *README.md
-e98b61e6e19d694e8b8fce408bdd5f74 *build/vignette.rds
+f5f5e6dedb80887844250bd1a495bdfe *build/vignette.rds
 30659892ef52fc7a122e379ded0bbadf *cleanup
 30659892ef52fc7a122e379ded0bbadf *cleanup.win
 6ec3456cd714ac1472e32397491ad520 *configure
 d41d8cd98f00b204e9800998ecf8427e *configure.win
-e5801cc09a3eb8de9aceff0cace3f97b *inst/NEWS.Rd
+745d6c472a6af002f401753079453a4b *inst/NEWS.Rd
 ae01dc7b9c10d063e2fe50955367e778 *inst/doc/wsrf-guide.R
 8838453b92490e636664061876a842b9 *inst/doc/wsrf-guide.Rmd
-c230d4484cd641ba6d8ad22bd231b263 *inst/doc/wsrf-guide.html
+f1377ea51162cb3794b17e779dd48955 *inst/doc/wsrf-guide.html
 890459bf55c7333ce08adca6004542ed *man/combine.wsrf.Rd
 b73992ce375445f211714d8167f62fbe *man/correlation.wsrf.Rd
 113a0fabe2666ef72793d357a12e49ce *man/importance.wsrf.Rd
@@ -40,7 +40,7 @@ f1371884fae43ad397050f1de56641c2 *man/wsrfParallelInfo.Rd
 01c8b9eff67b8822e7cbfb73af7a8e40 *src/Makevars.win
 2aab75cf699b2b4a3ed571854fd0e5f2 *src/c4_5_var_selector.cpp
 83fe0983203ab0bcb8fe66eb56eb84a1 *src/c4_5_var_selector.h
-0b3addb29ac6bfa5e291760f2c365006 *src/dataset.cpp
+8c818b264cf62dd77f56f082d9c55be1 *src/dataset.cpp
 4912c0ef4e45b4a689856f9603de0377 *src/dataset.h
 ccbd761e444b87e7ab465465425f6c25 *src/meta_data.cpp
 bb6f4deadbcfc176ed68b93280971135 *src/meta_data.h
