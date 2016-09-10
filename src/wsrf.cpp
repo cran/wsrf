@@ -1,62 +1,44 @@
 #include "wsrf.h"
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-#ifdef WSRF_USE_BOOST
-#include <boost/thread.hpp>
-#include <boost/bind.hpp>
-#include <boost/chrono.hpp>
-#include <boost/exception_ptr.hpp>
-#else
 #include <thread>
 #include <chrono>
 #include <future>
-#endif
-#endif
 
 
 using namespace std;
 
+SEXP wsrf (
+    SEXP xSEXP,         // Data.
+    SEXP ySEXP,         // Target variable name.
+    SEXP ntreesSEXP,     // Number of trees.
+    SEXP nvarsSEXP,      // Number of variables.
+    SEXP minnodeSEXP,    // Minimum node size.
+    SEXP weightsSEXP,    // Whether use weights.
+    SEXP parallelSEXP,   // Whether parallel or how many cores performing parallelism.
+    SEXP seedsSEXP,      // Random seeds for each trees.
+    SEXP importanceSEXP, // Whether calculate variable importance measures.
+    SEXP ispartSEXP      // Indicating whether it is part of the whole forests.
+    )
 /*
  * Main entry function for building random forests model.
  */
-SEXP wsrf (
-    SEXP dsSEXP,         // Data.
-    SEXP tnSEXP,         // Target variable name.
-    SEXP ntreesSEXP,     // Number of trees.
-    SEXP nvarsSEXP,      // Number of variables.
-    SEXP weightsSEXP,    // Whether use weights.
-    SEXP parallelSEXP,   // Whether parallel or how many cores performing parallelism.
-    SEXP seedsSEXP,      // Random seeds for each cores.
-    SEXP importanceSEXP, // Whether calculate variable importance measures.
-    SEXP ispartSEXP      // Indicating whether it is part of the whole forests.
-    ) {
+{
     BEGIN_RCPP
 
-        bool            ispart      = Rcpp::as<bool>(ispartSEXP);
+        MetaData   meta_data (xSEXP, ySEXP);
+        TargetData targ_data (ySEXP);
+        Dataset    train_set (xSEXP, &meta_data, true);
 
-        Rcpp::DataFrame ds           (dsSEXP);
-        MetaData        meta_data    (ds, Rcpp::as<string>(tnSEXP));
-        TargetData      targ_data    (ds, &meta_data);
-        Dataset         train_set    (ds, &meta_data, true);
-        RForest         rf           (&train_set,
-                                      &targ_data,
-                                      &meta_data,
-                                      Rcpp::as<int>(ntreesSEXP),
-                                      Rcpp::as<int>(nvarsSEXP),
-                                      Rcpp::as<bool>(weightsSEXP),
-                                      Rcpp::as<bool>(importanceSEXP),
-                                      seedsSEXP);
+
+        RForest rf (&train_set, &targ_data, &meta_data,
+                    Rcpp::as<int>(ntreesSEXP), Rcpp::as<int>(nvarsSEXP), Rcpp::as<int>(minnodeSEXP), Rcpp::as<bool>(weightsSEXP),
+                    Rcpp::as<bool>(importanceSEXP), seedsSEXP);
 
         volatile bool interrupt = false;
 
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
         int nthreads       = Rcpp::as<int>(parallelSEXP);
-#ifdef WSRF_USE_BOOST
-        int nCoresMinusTwo = boost::thread::hardware_concurrency() - 2;
-#else
         int nCoresMinusTwo = thread::hardware_concurrency() - 2;
-#endif
         if (nthreads == 0 || nthreads == 1 || (nthreads < 0 && nCoresMinusTwo == 1)) {  // build trees sequentially
 
             rf.buidForestSeq(&interrupt);
@@ -71,13 +53,8 @@ SEXP wsrf (
              *  1. represents user interrupt
              *  2. represents a exception has been thrown from one tree builder
              */
-#ifdef WSRF_USE_BOOST
-            boost::packaged_task<void> pt(boost::bind(&RForest::buildForestAsync, &rf, nthreads, &interrupt));
-            boost::unique_future<void> res = pt.get_future();
-            boost::thread task(boost::move(pt));
-#else  // #ifdef WSRF_USE_BOOST
+
             future<void> res = async(launch::async, &RForest::buildForestAsync, &rf, nthreads, &interrupt);
-#endif  // #ifdef WSRF_USE_BOOST
             try {
 
                 while (true) {
@@ -90,16 +67,12 @@ SEXP wsrf (
                     }
 
                     // check RF thread completion
-#ifdef WSRF_USE_BOOST
-                    if (res.wait_for(boost::chrono::milliseconds (100)) == boost::future_status::ready) {
-#else  // #ifdef WSRF_USE_BOOST
 
 #if (defined(__GNUC__) && ((__GNUC__ == 4 && __GNUC_MINOR__ >= 7) || (__GNUC__ >= 5))) || defined(__clang__)
                     if (res.wait_for(chrono::milliseconds {100}) == future_status::ready) {
 #else  // #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 7
                     if (res.wait_for(chrono::milliseconds {100})) {
 #endif // #if __GNUC__ >= 4 && __GNUC_MINOR__ >= 7
-#endif // #ifdef WSRF_USE_BOOST
                         res.get();
                         break;
                     } // if ()
@@ -111,22 +84,13 @@ SEXP wsrf (
                 if (res.valid())
                     res.get();
 
-#ifdef WSRF_USE_BOOST
-                boost::rethrow_exception(boost::current_exception());
-#else  // #ifdef WSRF_USE_BOOST
                 rethrow_exception(current_exception());
-#endif // #ifdef WSRF_USE_BOOST
             } // try-catch
         } // if-else
-#else  // #if defined WSRF_USE_C11 || defined WSRF_USE_BOOST;  run in sequence
-
-        rf.buidForestSeq(&interrupt);
-
-#endif // #if defined WSRF_USE_C11 || defined WSRF_USE_BOOST
 
         Rcpp::List wsrf_R(WSRF_MODEL_SIZE);
 
-        if (!ispart) {
+        if (!Rcpp::as<bool>(ispartSEXP)) {
             rf.calcEvalMeasures();
             wsrf_R[META_IDX]        = meta_data.save();
             wsrf_R[TARGET_DATA_IDX] = targ_data.save();
@@ -140,13 +104,12 @@ SEXP wsrf (
     END_RCPP
 }
 
-SEXP afterReduceForCluster (SEXP wsrfSEXP, SEXP dsSEXP, SEXP tnSEXP) {
+SEXP afterReduceForCluster (SEXP wsrfSEXP, SEXP xSEXP, SEXP ySEXP) {
     BEGIN_RCPP
 
         Rcpp::List      wsrf_R    (wsrfSEXP);
-        Rcpp::DataFrame ds        (dsSEXP);
-        MetaData        meta_data (ds, Rcpp::as<string>(tnSEXP));
-        TargetData      targ_data (ds, &meta_data);
+        MetaData        meta_data (xSEXP, ySEXP);
+        TargetData      targ_data (ySEXP);
         RForest         rf        (wsrf_R, &meta_data, &targ_data);
 
         rf.calcEvalMeasures();
@@ -163,8 +126,8 @@ SEXP afterMergeOrSubset (SEXP wsrfSEXP) {
     BEGIN_RCPP
 
         Rcpp::List wsrf_R    (wsrfSEXP);
-        MetaData   meta_data (Rcpp::as<Rcpp::List>(wsrf_R[META_IDX]));
-        TargetData targ_data (Rcpp::as<Rcpp::List>(wsrf_R[TARGET_DATA_IDX]));
+        MetaData   meta_data (Rcpp::as<Rcpp::List>((SEXPREC*)wsrf_R[META_IDX]));
+        TargetData targ_data (Rcpp::as<Rcpp::List>((SEXPREC*)wsrf_R[TARGET_DATA_IDX]));
         RForest    rf        (wsrf_R, &meta_data, &targ_data);
 
         rf.calcEvalMeasures();
@@ -174,13 +137,13 @@ SEXP afterMergeOrSubset (SEXP wsrfSEXP) {
     END_RCPP
 }
 
-SEXP predict (SEXP wsrfSEXP, SEXP dsSEXP, SEXP typeSEXP) {
+SEXP predict (SEXP wsrfSEXP, SEXP xSEXP, SEXP typeSEXP) {
 
     BEGIN_RCPP
 
         Rcpp::List wsrf_R    (wsrfSEXP);
-        MetaData   meta_data (Rcpp::as<Rcpp::List>(wsrf_R[META_IDX]));
-        Dataset    test_set  (Rcpp::as<Rcpp::DataFrame>(dsSEXP), &meta_data, false);
+        MetaData   meta_data (Rcpp::as<Rcpp::List>((SEXPREC*)wsrf_R[META_IDX]));
+        Dataset    test_set  (xSEXP, &meta_data, false);
         RForest    rf        (wsrf_R, &meta_data, NULL);
 
         string type = Rcpp::as<string>(typeSEXP);
@@ -203,7 +166,7 @@ SEXP print (SEXP wsrfSEXP, SEXP treesSEXP) {
     BEGIN_RCPP
 
         Rcpp::List          wsrf_R            (wsrfSEXP);
-        MetaData            meta_data         (Rcpp::as<Rcpp::List>(wsrf_R[META_IDX]));
+        MetaData            meta_data         (Rcpp::as<Rcpp::List>((SEXPREC*)wsrf_R[META_IDX]));
         Rcpp::List          trees             (wsrf_R[TREES_IDX]);
         Rcpp::NumericVector tree_error_rates  (wsrf_R[TREE_OOB_ERROR_RATES_IDX]);
         Rcpp::IntegerVector tree_idx_vec      (treesSEXP);
@@ -213,7 +176,7 @@ SEXP print (SEXP wsrfSEXP, SEXP treesSEXP) {
             int    index      = tree_idx_vec[i]-1;
             double error_rate = tree_error_rates[index];
 
-            vector<vector<double> > node_infos = Rcpp::as<vector<vector<double> > >(trees[index]);
+            vector<vector<double> > node_infos = Rcpp::as<vector<vector<double> > >((SEXPREC*)trees[index]);
 
             int ntests = 0;
             int nnodes = node_infos.size();

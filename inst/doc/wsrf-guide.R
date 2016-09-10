@@ -1,21 +1,6 @@
 ## ----eval=FALSE----------------------------------------------------------
 #  install.packages("wsrf")
 
-## ----eval=FALSE----------------------------------------------------------
-#  install.packages("wsrf",
-#                   type="source",
-#  				 configure.args="--enable-c11=yes")
-
-## ----eval=FALSE----------------------------------------------------------
-#  install.packages("wsrf",
-#                   configure.args="--enable-c11=no")
-
-## ----eval=FALSE----------------------------------------------------------
-#  install.packages("wsrf",
-#                   type="source",
-#                   configure.args="--with-boost-include=<Boost include path>
-#                                   --with-boost-lib=<Boost lib path>")
-
 ## ----usage_load, message=FALSE-------------------------------------------
 library("rattle")
 ds <- weather
@@ -44,16 +29,24 @@ length(train <- sample(nrow(ds), 0.7*nrow(ds)))
 length(test <- setdiff(seq_len(nrow(ds)), train))
 
 ## ----eval=FALSE----------------------------------------------------------
-#  wsrf(formula,
-#       data,
+#  wsrf(formula, data, ...)
+
+## ----eval=FALSE----------------------------------------------------------
+#  wsrf(x,
+#       y,
+#       mtry=floor(log2(length(x))+1),
 #       ntrees=500,
-#       nvars=NULL,
 #       weights=TRUE,
-#       parallel=TRUE)
+#       parallel=TRUE,
+#       na.action=na.fail,
+#       importance=FALSE,
+#       nodesize=2,
+#       clusterlogfile,
+#       ...)
 
 ## ----usage_build_by_default, message=FALSE-------------------------------
 library("wsrf")
-model.wsrf.1 <- wsrf(form, data=ds[train, vars])
+model.wsrf.1 <- wsrf(form, data=ds[train, vars], parallel=FALSE)
 print(model.wsrf.1)
 print(model.wsrf.1, 1)  # Print tree 1.
 
@@ -64,7 +57,7 @@ actual <- ds[test, target]
 
 ## ----usage_build_another, message=FALSE----------------------------------
 # Here we build another model without weighting.
-model.wsrf.2 <- wsrf(form, data=ds[train, vars], weights=FALSE)
+model.wsrf.2 <- wsrf(form, data=ds[train, vars], weights=FALSE, parallel=FALSE)
 print(model.wsrf.2)
 
 ## ----usage_subset_combine------------------------------------------------

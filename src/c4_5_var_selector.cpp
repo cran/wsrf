@@ -1,27 +1,34 @@
 #include "c4_5_var_selector.h"
 
-const int C4p5Selector::MIN_NODE_SIZE_ = 2;  //TODO: Make it variable.
-
-C4p5Selector::C4p5Selector (Dataset* train_set, TargetData* targdata, MetaData* meta_data, const vector<int>& obs_vec, const vector<int>& var_vec, unsigned seed)
+C4p5Selector::C4p5Selector (
+        Dataset* train_set,
+        TargetData* targdata,
+        MetaData* meta_data,
+        int min_node_size,
+        const vector<int>& obs_vec,
+        const vector<int>& var_vec,
+        int mtry,
+        unsigned seed)
     : VarSelector(train_set, targdata, meta_data, obs_vec, var_vec) {
     seed_ = seed;
     info_ = calcEntropy(obs_vec);
+    mtry_ = mtry;
+    min_node_size_ = min_node_size;
+
 }
 
-void C4p5Selector::handleDiscVar (int var_idx) {
-    /*
-     * Calculate corresponding information
-     * if split by discrete variable <var_idx>
-     */
-
-    /*
-     * If no more than 2 child nodes contain at least <MIN_NODE_SIZE_>
-     * instances, don't split training set by this attribute
-     */
+void C4p5Selector::handleDiscVar (int var_idx)
+/*
+ * Calculate corresponding information if split by discrete variable <var_idx>.
+ *
+ * If no more than 2 child nodes contain at least <MIN_NODE_SIZE_>
+ * instances, don't split training set by this attribute
+ */
+{
     map<int, vector<int> > mapper = train_set_->splitDiscVar(obs_vec_, var_idx);
     int count = 0;
     for (map<int, vector<int> >::iterator iter = mapper.begin(); iter != mapper.end(); ++iter)
-        if (int(iter->second.size()) >= MIN_NODE_SIZE_) count++;
+        if (int(iter->second.size()) >= min_node_size_) count++;
 
     if (count < 2) return;
 
@@ -52,14 +59,7 @@ void C4p5Selector::handleDiscVar (int var_idx) {
 template<class T>
 void C4p5Selector::handleContVar (int var_idx) {
     //TODO: Need better way to deal with different type of variable, that is DISCRETE, INTSXP, REALSXP.
-    if (nobs_ < 4) return;
-
-    int min_split = (nobs_ * 0.1) / (meta_data_->nlabels());
-    if (min_split > 25) {
-        min_split = 25;
-    } else if (min_split < MIN_NODE_SIZE_) {
-        min_split = MIN_NODE_SIZE_;
-    }
+    if (nobs_ < 2 * min_node_size_) return;
 
     vector<int> sorted_obs_vec = obs_vec_;
     sort(sorted_obs_vec.begin(), sorted_obs_vec.end(), VarValueComparor<T>(train_set_, var_idx));
@@ -68,20 +68,20 @@ void C4p5Selector::handleContVar (int var_idx) {
     vector<int> right_dstr = targ_data_->getLabelFreqCount(sorted_obs_vec);
 
 
-    int current_label;
-    for (int i = 0; i < min_split; ++i) {
+    int current_label = -1;
+    for (int i = 0; i < min_node_size_; ++i) {
         current_label = targ_data_->getLabel(sorted_obs_vec[i]) - 1;
         left_dstr[current_label]++;
         right_dstr[current_label]--;
     }
 
     T* var_array = train_set_->getVar<T>(var_idx);
-    double current_value = var_array[sorted_obs_vec[min_split-1]];
+    double current_value = var_array[sorted_obs_vec[min_node_size_-1]];
     double subinfo;
     double split_value = -1;
     bool subinfo_is_set = false;
     int pos;
-    for (int i = min_split; i < nobs_ - min_split; ++i) {
+    for (int i = min_node_size_; i < nobs_ - min_node_size_; ++i) {
         int next_label = targ_data_->getLabel(sorted_obs_vec[i]) - 1;
         double next_value = var_array[sorted_obs_vec[i]];
         if (current_label != next_label && current_value != next_value) {
@@ -124,7 +124,11 @@ void C4p5Selector::handleContVar (int var_idx) {
     }
 }
 
-void C4p5Selector::handleContVar (int var_idx) {
+void C4p5Selector::handleContVar (int var_idx)
+/*
+ * Calculate corresponding information if split by numerical variable <var_idx>.
+ */
+{
     switch (meta_data_->getVarType(var_idx)) {
     case INTSXP:
         handleContVar<int>(var_idx);
@@ -137,68 +141,16 @@ void C4p5Selector::handleContVar (int var_idx) {
     };
 }
 
-vector<int> C4p5Selector::getRandomVars (vector<int> var_vec, int nselect) {
-    /*
-     * Randomly select <nselect> variables from <var_vec>.
-     * Default subspace size is log(n)/log2 + 1 if <nselect> == -1.
-     *
-     * Duplicate variables should not be in the result.
-     */
-
-    //TODO: If possible, make similar RNG codes into a single function.
-
-    //
-    int nleft = var_vec.size();
-    if (nselect == -1) nselect = log((double)nleft)/LN_2 + 1;
-
-    if (nselect >= nleft) return var_vec;
-
-    vector<int> result(nselect);
-
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-#ifdef WSRF_USE_BOOST
-    boost::random::mt19937 re(seed_);
-#else
-    default_random_engine re {seed_};
-#endif
-#else
-    Rcpp::RNGScope rngScope;
-#endif
-
-    for (int i = 0; i < nselect; ++i) {
-
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-#ifdef WSRF_USE_BOOST
-        boost::random::uniform_int_distribution<int> uid(0, nleft - 1);
-#else
-        uniform_int_distribution<int> uid {0, nleft - 1};
-#endif
-        int random_num = uid(re);
-#else
-        int random_num = unif_rand() * nleft;
-#endif
-
-        result[i] = var_vec[random_num];
-        var_vec[random_num] = var_vec[nleft-1];
-        nleft--;
-
-    }
-
-    return result;
-
-}
-
-void C4p5Selector::calcInfos (const vector<int>& var_vec, volatile bool* pInterrupt) {
+void C4p5Selector::calcInfos (const vector<int>& var_vec, volatile bool* pInterrupt)
+/*
+ * Calculate the impurity difference when using each variable for node splitting.
+ */
+{
     int n = var_vec.size();
     for (int i = 0; i < n; i++) {
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
         if (*pInterrupt)
             return;
-#else
-        // check interruption
-        if (check_interrupt()) throw interrupt_exception("The random forest model building is interrupted.");
-#endif
 
         if (meta_data_->getVarType(var_vec[i]) == DISCRETE) {
             handleDiscVar(var_vec[i]);
@@ -218,11 +170,12 @@ double C4p5Selector::averageInfoGain () {
     return average_info_gain;
 }
 
-void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* pInterrupt) {
-    /*
-     * calculate all information gain when split by any one of the variables
-     * from the randomly selected subspace of size <nvars>
-     */
+void C4p5Selector::doIGRSelection (VarSelectRes& res, volatile bool* pInterrupt)
+/*
+ * calculate all information gain when split by any one of the variables
+ * from the weighted randomly selected subspace of size <mtry_>
+ */
+{
     calcInfos(var_vec_, pInterrupt);
 
     if (info_gain_map_.empty()) {
@@ -249,15 +202,10 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
         }
     }
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
     if (*pInterrupt) {
         setResult(-1, res);
         return;
     }
-#else
-    // check interruption
-    if (check_interrupt()) throw interrupt_exception("The random forest model building is interrupted.");
-#endif
 
     int vindex;
     if (cand_var_vec.size() == 0) {
@@ -267,14 +215,8 @@ void C4p5Selector::doIGRSelection (int nvars, VarSelectRes& res, volatile bool* 
         gain_ratio = split_info > 0 ? info_gain_map_.begin()->second / split_info : NA_REAL;
     } else {
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-        IGR igr(cand_gain_ratio_vec, nvars, seed_);
-#else
-        IGR igr(cand_gain_ratio_vec, nvars);
-#endif
-        igr.normalizeWeight(pInterrupt);
-
-        int index = igr.getSelectedIdx();
+        IGR igr(cand_gain_ratio_vec, mtry_, seed_);
+        int index = igr.getSelectedIdx(pInterrupt);
         vindex = cand_var_vec[index];
 
         gain_ratio = cand_gain_ratio_vec[index];
@@ -297,13 +239,14 @@ void C4p5Selector::setResult (int vindex, VarSelectRes& result, double gain_rati
     }
 }
 
-void C4p5Selector::doSelection (int nvars, VarSelectRes& res, volatile bool* pInterrupt) {
-    /*
-     * calculate all information gain when split by any one of the variables
-     * from the randomly selected subspace of size <nvars>
-     */
-
-    vector<int> subvar_vec = getRandomVars(var_vec_, nvars);
+void C4p5Selector::doSelection (VarSelectRes& res, volatile bool* pInterrupt)
+/*
+ * calculate all information gain when split by any one of the variables
+ * from the randomly selected subspace of size <mtry_>
+ */
+{
+    Sampling rs (seed_);
+    vector<int> subvar_vec = rs.nonReplaceRandomSample(var_vec_, mtry_);
 
     calcInfos(subvar_vec, pInterrupt);
 
@@ -312,24 +255,24 @@ void C4p5Selector::doSelection (int nvars, VarSelectRes& res, volatile bool* pIn
         return;
     }
 
-    /*
-     * find the best variable
-     */
+    findBest(res, pInterrupt);
+}
+
+void C4p5Selector::findBest(VarSelectRes& res, volatile bool* pInterrupt)
+/*
+ * find the best variable.
+ */
+{
     double average_info_gain = averageInfoGain();
     double gain_ratio = -1;
     int vindex = -1;
     bool is_set_gain_ratio = false;
     for (map<int, double>::iterator iter = info_gain_map_.begin(); iter != info_gain_map_.end(); ++iter) {
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
         if (*pInterrupt) {
             setResult(-1, res);
             return;
         }
-#else
-        // check interruption
-        if (check_interrupt()) throw interrupt_exception("The random forest model building is interrupted.");
-#endif
 
         if (iter->second >= average_info_gain) {
             double split_info = split_info_map_[iter->first];

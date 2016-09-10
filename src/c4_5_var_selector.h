@@ -4,19 +4,13 @@
 #include "IGR.h"
 #include "var_selector.h"
 
-#if defined WSRF_USE_BOOST || defined WSRF_USE_C11
-#ifdef WSRF_USE_BOOST
-#include <boost/bind.hpp>
-#include <boost/random/mersenne_twister.hpp>
-#include <boost/random/uniform_int_distribution.hpp>
-#else
-#include <random>
-#endif
-#endif
+#include <iterator>
+#include <algorithm>
 
 class C4p5Selector: public VarSelector {
 private:
-    const static int MIN_NODE_SIZE_;  // threshold for minimum child node size
+    int  min_node_size_;  // threshold for minimum child node size
+    int  mtry_;
 
     unsigned seed_;
     double   info_;  // entropy of this node
@@ -26,20 +20,20 @@ private:
     map<int, double> split_value_map_;  // <variable> : <optimal split value>
     map<int, map<int, vector<int> > > cand_splits_map_;  // <variable> : "<value> : <observations with that value>"
 
-    void   setResult (int vindex, VarSelectRes& result, double gain_ratio=NA_REAL);
+    void   setResult (int vindex, VarSelectRes& result, double gain_ratio = NA_REAL);
     void   calcInfos (const vector<int>& var_vec, volatile bool* pInterrupt);
     double averageInfoGain ();
 
 public:
 
-    C4p5Selector (Dataset*, TargetData*, MetaData*, const vector<int>&, const vector<int>&, unsigned);
+    C4p5Selector (Dataset*, TargetData*, MetaData*, int, const vector<int>&, const vector<int>&, int, unsigned);
 
-    vector<int> getRandomVars (vector<int> var_vec, int nselect);
     template<class T> void handleContVar (int var_idx);
     void handleContVar (int var_idx);
     void handleDiscVar (int var_idx);
-    void doSelection (int nvars, VarSelectRes& res, volatile bool* pInterrupt);     // C4.5
-    void doIGRSelection (int nvars, VarSelectRes& res, volatile bool* pInterrupt);  // IGR weight method
+    void findBest(VarSelectRes& res, volatile bool* pInterrupt);
+    void doSelection (VarSelectRes& res, volatile bool* pInterrupt);     // C4.5
+    void doIGRSelection (VarSelectRes& res, volatile bool* pInterrupt);  // IGR weight method
 
     double sumNlogn (const vector<int>& dstr, int nobs) {
         double sum = 0;
@@ -49,7 +43,11 @@ public:
         return train_set_->nlogn(nobs) - sum;
     }
 
-    double calcEntropy (const vector<int>& obs_vec) {
+    double calcEntropy (const vector<int>& obs_vec)
+    /*
+     * Calculate the entropy of the sub data set obs_vec.
+     */
+    {
         int n = obs_vec.size();
         return sumNlogn(targ_data_->getLabelFreqCount(obs_vec), n) / n;
     }
@@ -59,7 +57,11 @@ public:
     }
 
     template<class T>
-    struct VarValueComparor {
+    struct VarValueComparor
+    /*
+     * Compare the values of variable <var_idx>, given the indexes of the observations.
+     */
+    {
         //TODO: Need better way to deal with different type of variable, that is DISCRETE, INTSXP, REALSXP.
         T* var_array_;
 

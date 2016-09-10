@@ -16,18 +16,19 @@
  */
 
 RcppExport SEXP wsrf (
-    SEXP dsSEXP,
-    SEXP tnSEXP,
+    SEXP xSEXP,
+    SEXP ySEXP,
     SEXP ntreesSEXP,
     SEXP nvarsSEXP,
+    SEXP minnodeSEXP,
     SEXP weightsSEXP,
     SEXP parallelSEXP,
     SEXP seedsSEXP,
     SEXP importanceSEXP,
     SEXP isPartSEXP);
 
-RcppExport SEXP predict (SEXP wrfSEXP, SEXP dsSEXP, SEXP typeSEXP);
-RcppExport SEXP afterReduceForCluster (SEXP wrfSEXP, SEXP dsSEXP, SEXP tnSEXP);
+RcppExport SEXP predict (SEXP wrfSEXP, SEXP xSEXP, SEXP typeSEXP);
+RcppExport SEXP afterReduceForCluster (SEXP wrfSEXP, SEXP xSEXP, SEXP ySEXP);
 RcppExport SEXP afterMergeOrSubset (SEXP wsrfSEXP);
 RcppExport SEXP print (SEXP wsrfSEXP, SEXP treesSEXP);
 

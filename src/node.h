@@ -1,12 +1,6 @@
 #ifndef NODE_H_
 #define NODE_H_
 
-#ifdef WSRF_USE_BOOST
-#include <boost/bind.hpp>
-#include <boost/lambda/lambda.hpp>
-#include <boost/foreach.hpp>
-#endif
-
 #include <algorithm>
 #include <iostream>
 #include <sstream>
@@ -20,7 +14,7 @@ private:
     int      nobs_;  // The number of observations represented by the node.
 
     /*
-     * following attributes is for internal node
+     * following attributes are for internal node
      */
 
     int    var_idx_;      // The index of the variable represented by the node.
@@ -32,7 +26,7 @@ private:
     vector<Node*> child_nodes_;  // Children nodes of this node.
 
     /*
-     * following attributes is for leaf node
+     * following attributes are for leaf node
      */
 
     int label_;   // class label of the leaf node
@@ -169,10 +163,11 @@ public:
         return label_distribution_;
     }
 
-    string getLabelDstrStr () {
-        /*
-         * For printing the class distribution in the leaf node.
-         */
+    string getLabelDstrStr ()
+    /*
+     * For printing the class distribution in the leaf node.
+     */
+    {
         vector<double> dstr = getLabelDstr();
         stringstream res;
         res.precision(2);
@@ -186,24 +181,24 @@ public:
         return res.str();
     }
 
-    void save (vector<double>& res, MetaData* meta_data) {
-        /*
-         *     0. type
-         *     1. number of observations
-         *
-         * Leaf node structure:
-         *     2. class label
-         *     3. label frequency count
-         *
-         * Internal node structure:
-         *     2. number of child nodes
-         *     3. variable index
-         *     4. information gain
-         *     5. split info
-         *     6. information gain ratio
-         *     7. split value (optional,depends on 0.)
-         */
-
+    void save (vector<double>& res, MetaData* meta_data)
+    /*
+     *     0. type
+     *     1. number of observations
+     *
+     * Leaf node structure:
+     *     2. class label
+     *     3. label frequency count
+     *
+     * Internal node structure:
+     *     2. number of child nodes
+     *     3. variable index
+     *     4. information gain
+     *     5. split info
+     *     6. information gain ratio
+     *     7. split value (optional,depends on 3.)
+     */
+    {
         vector<double> node_info;
         node_info.push_back((int) (type_));
         node_info.push_back(nobs_);

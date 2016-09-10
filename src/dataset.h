@@ -6,27 +6,32 @@
 
 using namespace std;
 
-class TargetData {
-    /*
-     * Store the data of target variable in training set.
-     */
+class TargetData
+/*
+ * Store the data of target variable in training set.
+ */
+{
 private:
     int  nlabels_;
     int  nobs_;
-    int* targ_array_;
+    int* targ_array_;           // raw data pointer
 
-    Rcpp::IntegerVector data_;
+    Rcpp::IntegerVector data_;  // raw data Rcpp wrapper
 
 public:
-    TargetData (Rcpp::DataFrame ds, MetaData* meta_data) {
-        nlabels_ = meta_data->nlabels();
-        nobs_    = ds.nrows();
+    TargetData (SEXP ySEXP) {
+        data_    = Rcpp::as<Rcpp::IntegerVector>(ySEXP);
+        nlabels_ = Rcpp::as<Rcpp::CharacterVector>(data_.attr("levels")).size();
+        nobs_    = data_.size();
 
-        data_       = Rcpp::as<Rcpp::IntegerVector>(ds[meta_data->targVarIdx()]);
         targ_array_ = INTEGER(data_);
     }
 
-    TargetData (Rcpp::List targdata) {
+    TargetData (Rcpp::List targdata)
+    /*
+     * Construct target data from the R list saved by TargetData::save().
+     */
+    {
         nlabels_ = Rcpp::as<int>(targdata[NLABELS]);
 
         data_ = Rcpp::as<Rcpp::IntegerVector>(targdata[TRAIN_TARGET_LABELS]);
@@ -62,9 +67,12 @@ public:
         }
     }
 
-    vector<int> getLabelFreqCount (const vector<int>& obs_vec) {
-        // Class label frequency count.
-        // That is, how many observations have a specific class label.
+    vector<int> getLabelFreqCount (const vector<int>& obs_vec)
+    /*
+     * Class label frequency count.
+     * That is, how many observations have a specific class label.
+     */
+    {
         int nobs = obs_vec.size();
         vector<int> numbers (nlabels_, 0);
 
@@ -91,7 +99,9 @@ private:
     MetaData*        meta_data_;     // Meta data.
     int              nobs_;          // The total number of observations in the training set.
     bool             training_;      // Training set or not?
-    vector<double>   nlogn_vec_;
+
+    vector<double>   nlogn_vec_;     // The value of N*log(N) for all N in [1, nrows].
+
     vector<Rcpp::IntegerVector> preserve_int;
     vector<Rcpp::NumericVector> preserve_num;
 
@@ -100,15 +110,15 @@ private:
         switch (meta_data_->getVarType(pindex)) {
         case DISCRETE:
             if (!training_) {
+                if (!Rf_isFactor(dataptr)) throw std::range_error("Variable " + meta_data_->getVarName(pindex) + "is not type of factor which is different from the data for the model!");
+
                 Rcpp::IntegerVector rcppdata(dataptr);
-                preserve_int.push_back(rcppdata);  // Preserve data in case that if the type of the variable is different from training data, <rcppdata> would be destroyed out of the code block.
                 int nlevels_actual = Rcpp::CharacterVector(rcppdata.attr("levels")).size();
                 int nlevels_known = meta_data_->getNumValues(pindex);
 
                 if (nlevels_known < nlevels_actual) {  // There are more values than in training data.
 
-                    throw std::range_error("New values that do not exist in training data found in variable "
-                        + meta_data_->getVarName(pindex) + "!");
+                    throw std::range_error("New values that do not exist in training data found in variable " + meta_data_->getVarName(pindex) + "!");
 
                 } else if (nlevels_known == nlevels_actual) {
 
@@ -117,8 +127,7 @@ private:
 
                     if (equal(actual_levels.begin(), actual_levels.end(), known_levels.begin())) {
                         data_ptr_vec_[pindex] = INTEGER(rcppdata);
-                    } else throw std::range_error("Mismatch values between training data and predicting data found in variable "
-                        + meta_data_->getVarName(pindex) + "!");
+                    } else throw std::range_error("Mismatch values between training data and predicting data found in variable " + meta_data_->getVarName(pindex) + "!");
 
                 } else {  // There are less values than in training data.  We need to match the values with training data.
 
@@ -139,15 +148,16 @@ private:
                             pdata[i] = match_vec[pdata[i]];
                         data_ptr_vec_[pindex] = pdata;
 
-                    } else throw std::range_error("New values that do not exist in training data found in variable "
-                        + meta_data_->getVarName(pindex) + "!");
+                    } else throw std::range_error("New values that do not exist in training data found in variable " + meta_data_->getVarName(pindex) + "!");
 
                 }
-                break;
+
+            } else {
+                data_ptr_vec_[pindex] = INTEGER(Rcpp::IntegerVector(dataptr));
             }
-            /* no break */
+            break;
         case INTSXP:
-            if (!training_) {
+            if (!training_ && TYPEOF(dataptr) != INTSXP) {
                 preserve_int.push_back(Rcpp::IntegerVector(dataptr));  // Preserve data in case that the type of the variable is different from training data.
                 data_ptr_vec_[pindex] = INTEGER(preserve_int.back());
             } else {
@@ -155,7 +165,7 @@ private:
             }
             break;
         case REALSXP:
-            if (!training_) {
+            if (!training_ && TYPEOF(dataptr) != REALSXP) {
                 preserve_num.push_back(Rcpp::NumericVector(dataptr));  // Preserve data in case that the type of the variable is different from training data.
                 data_ptr_vec_[pindex] = REAL(preserve_num.back());
             } else {
@@ -170,7 +180,7 @@ private:
 
 public:
 
-    Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training);
+    Dataset (SEXP xSEXP, MetaData* meta_data, bool training);
 
     double nlogn (int n) {
         return nlogn_vec_[n];
@@ -181,7 +191,11 @@ public:
     }
 
     template<class T>
-    T* getVar (int index) {
+    T* getVar (int index)
+    /*
+     * Get raw data for all the values of variable <index>.
+     */
+    {
         //TODO: Need better way to deal with different type of variable, that is DISCRETE, INTSXP, REALSXP.
         return (T*)(data_ptr_vec_[index]);
     }

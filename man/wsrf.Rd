@@ -1,6 +1,8 @@
 \name{wsrf}
 
 \alias{wsrf}
+\alias{wsrf.formula}
+\alias{wsrf.default}
 
 \concept{weighted subspace decision trees}
 \concept{weighted subspace random forest}
@@ -12,50 +14,58 @@
 }
 
 \description{
-  
+
   Build weighted subspace C4.5-based decision trees to construct a
   forest.
-  
+
 }
 
 \usage{
 
-wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE, 
-                 parallel=TRUE, na.action=na.fail, importance=FALSE, clusterlogfile)
+\method{wsrf}{formula}(formula, data, ...)
+\method{wsrf}{default}(x, y, mtry=floor(log2(length(x))+1), ntrees=500,
+                       weights=TRUE, parallel=TRUE, na.action=na.fail,
+                       importance=FALSE, nodesize=2, clusterlogfile, ...)
 
 }
 
 \arguments{
-  
-  \item{formula}{a formula, with a response but no interaction terms.}
+
+  \item{x, formula}{a data frame or a matrix of predictors, or a formula
+    with a response but no interaction terms.}
+
+  \item{y}{a response vector.}
 
   \item{data}{a data frame in which to interpret the variables named in
-          the formula.}
+    the formula.}
 
-  \item{ntrees}{number of trees to build on each server; By default,
-  500}
+  \item{ntrees}{number of trees to grow.  By default, 500}
 
-  \item{nvars, mtry}{number of variables to choose, by default, being
-      the integer less than or equal to \eqn{log_2(ninputs) + 1}.  For
-      compatibility with other \code{R} packages like
-      \code{randomForest}, both \code{nvars} and \code{mtry} are
-      supported, however, only one of them should be specified.}
+  \item{mtry}{number of variables to choose as candidates at each node
+    split, by default, \code{floor(log2(length(x))+1)}.}
 
   \item{weights}{logical.  \code{TRUE} for weighted subspace selection,
-      which is the default; \code{FALSE} for random selection, and the
-      trees are based on C4.5.}
+    which is the default; \code{FALSE} for random selection, and the
+    trees are based on C4.5.}
 
-  \item{na.action}{indicate the behaviour when encountering NA values in
-      \code{data}.}
+  \item{na.action}{a function indicate the behaviour when encountering
+    NA values in \code{data}.  By default, \code{na.fail}.  If
+    \code{NULL}, do nothing.}
 
   \item{parallel}{whether to run multiple cores (TRUE), nodes, or
-      sequentially (FALSE).}
+    sequentially (FALSE).}
 
   \item{importance}{should importance of predictors be assessed? }
+
+  \item{nodesize}{minimum size of leaf node, i.e., minimum number of
+      observations a leaf node represents.  By default, 2.}
 
   \item{clusterlogfile}{character.  The pathname of the log file when
       building model in a cluster.  For debug.}
 
+  \item{...}{optional parameters to be passed to the low level function
+             \code{wsrf.default}.}
+  
 }
 
 \details{
@@ -69,12 +79,12 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   (variables) and \emph{k}-way split for categorical ones.  For
   continuous predictors, each of the values themselves is used as split
   points, no discretization used.  The only stopping condition for split
-  is the minimum node size is 2.
+  is the minimum node size must not less than \code{nodesize}.
 
 }
 
 \value{
-  
+
   An object of class \pkg{wsrf}, which is a list with the following
   components:
 
@@ -114,14 +124,18 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   set.seed(42)
   train <- sample(nrow(ds), 0.7*nrow(ds))
   test  <- setdiff(seq_len(nrow(ds)), train)
-  
-  # Build model.
-  model.wsrf <- wsrf(form, data=ds[train, vars])
+
+  # Build model.  We disable parallelism here, since CRAN Repository
+  # Policy (https://cran.r-project.org/web/packages/policies.html)
+  # limits the usage of multiple cores to save the limited resource of
+  # the check farm.
+
+  model.wsrf <- wsrf(form, data=ds[train, vars], parallel=FALSE)
   
   # View model.
   print(model.wsrf)
   print(model.wsrf, tree=1)
-  
+
   # Evaluate.
   strength(model.wsrf)
   correlation(model.wsrf)
@@ -131,7 +145,7 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
 }
 
 \references{
-  
+
   Xu B, Huang JZ, Williams G, Wang Q, Ye YM
   (2012). "Classifying very high-dimensional data with random forests built from small subspaces."
   \emph{International Journal of Data Warehousing and Mining (IJDWM)},
@@ -140,13 +154,13 @@ wsrf(formula, data, nvars, mtry, ntrees=500, weights=TRUE,
   Quinlan
   J. R. (1993). "C4.5: Programs for Machine Learning". \emph{Morgan
   Kaufmann}.
-  
+
 }
 
 \author{
-  
+
   He Zhao and Graham Williams (SIAT)
-  
+
 }
 
 \keyword{ models }

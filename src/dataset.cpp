@@ -1,6 +1,7 @@
 #include "dataset.h"
 
-Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training) {
+Dataset::Dataset (SEXP xSEXP, MetaData* meta_data, bool training) {
+    Rcpp::DataFrame ds(xSEXP);
     training_     = training;
     nobs_         = ds.nrows();
     data_ptr_vec_ = vector<void*>(ds.size());
@@ -15,7 +16,7 @@ Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training) {
          */
 
         for (int i = 0; i < nvars; i++)
-            this->init(i, ds[i]);
+            this->init(i, (SEXPREC*)ds[i]);
 
         int n = 1;
         nlogn_vec_ = vector<double>(ds.nrows()+1);
@@ -29,19 +30,26 @@ Dataset::Dataset (Rcpp::DataFrame ds, MetaData* meta_data, bool training) {
          */
         if (nvars > ds.size()) throw std::range_error("The number of variables is less than expected.");
 
+        Rcpp::CharacterVector vnames(ds.names());
         for (int i = 0; i < nvars; i++) {
-            this->init(i, ds[meta_data_->getVarName(i)]);
+            if (Rcpp::as<string>((SEXPREC*)vnames[i]) == meta_data_->getVarName(i)) {
+                this->init(i, (SEXPREC*)ds[i]);
+            } else {
+                this->init(i, ds[meta_data_->getVarName(i)]);
+            }
         }
     }
 
 }
 
-map<int, vector<int> > Dataset::splitDiscVar (const vector<int>& obs_vec, int vindex) {
-    /*
-     * Return a mapping table which elements are
-     * <value>:<index list of observations with that same value> pairs
-     * where values are possible ones of that variable.
-     */
+map<int, vector<int> > Dataset::splitDiscVar (const vector<int>& obs_vec, int vindex)
+/*
+ * Return a mapping table which elements are
+ * <value>:<index list of observations with that same value> pairs
+ * where values are possible ones of that variable.
+ */
+{
+
     int nvals = meta_data_->getNumValues(vindex);
     int nobs = obs_vec.size();
     int * var_array = getVar<int>(vindex);
@@ -59,11 +67,13 @@ map<int, vector<int> > Dataset::splitDiscVar (const vector<int>& obs_vec, int vi
 
 }
 
-map<int, vector<int> > Dataset::splitPosition (vector<int>& obs_vec, int pos) {
-    /*
-     * Separate <obs_vec> into two parts,
-     * and the split point is at index <pos>.
-     */
+map<int, vector<int> > Dataset::splitPosition (vector<int>& obs_vec, int pos)
+/*
+ * Separate <obs_vec> into two parts,
+ * and the split point is at index <pos>.
+ */
+{
+
     int nobs = obs_vec.size();
     map<int, vector<int> > result;
     if (pos < 0 || pos >= nobs) {

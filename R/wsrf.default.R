@@ -1,65 +1,40 @@
-wsrf <- function(
-    formula,
-    data,
-    nvars,
-    mtry,
+wsrf.default <- function(
+    x,
+    y,
+    mtry=floor(log2(length(x))+1),
     ntrees=500,
     weights=TRUE,
     parallel=TRUE,
     na.action=na.fail,
     importance=FALSE,
-    clusterlogfile)
-{
-  # Determine the information provided by the formula.
+    nodesize=2,
+    clusterlogfile,
+    ...) {
 
-  target <- as.character(formula[[2]]) # Assumes it is a two sided formula.
-  target <- sub("^`(.*)`$", "\\1", target)  # Remove backticks
-  inputs <- attr(terms.formula(formula, data=data), "term.labels")
-  inputs <- sub("^`(.*)`$", "\\1", inputs)  # Remove backticks if variable names are non-syntactic
-  vars   <- union(inputs, target)
+  # Perform the required na.action, which defaults to faling if there is missing
+  # data in the dataset.
 
-  # Retain just the dataset required, and perform the required
-  # na.action, which defaults to faling if there is missing data in
-  # the dataset.
-
-  data <- as.data.frame(na.action(data[vars]))
-
-  # For the C++ code, when nvars=-1 then nvars will be set to (log_2(n)
-  # + 1). Rather than relying on the C++ default, we set the default
-  # value here, making it more clearly accessible to the R users.
-  #
-  # For compatibility with the R package randomForest, both nvars and
-  # mtry are supported, however, only one of them should be specified.
-  # We noted that in rf.c of the package source for randomForest, they
-  # also use nvar but set mtry to nvar!
-
-  if (missing(nvars) && missing(mtry))
-    nvars <- floor(log2(length(inputs))+1)
-  else if(!missing(nvars) && !missing(mtry)) 
-    stop("only either nvars or mtry can be specified")
-  else if (missing(nvars))
-    nvars <- mtry
-  nvars <- floor(nvars)
-
-  # Check for pre-conditions.
-  
-  if(! target %in% names(data))
-    stop("The named target must be included in the dataset.")
-
-  if (nvars > length(inputs))
-    stop("The chosen number of variables is greater than actually available.")
+  if (!is.null(na.action)) {
+    data <- as.data.frame(na.action(cbind(x, y)))
+    x <- data[-length(data)]
+    y <- data[[length(data)]]
+    rm(data)
+  }
 
   # Prepare to pass execution over to the suitable helper.
-
-  if (!is.factor(data[[target]]))
-    data[[target]] <- as.factor(data[[target]])
-  #nm    <- .get.names.info(data, target)
-  seeds <- as.integer(runif(ntrees) * 10000000)
+  
+  if (!is.factor(y))
+    y <- as.factor(y)
+  
+  mtry    <- as.integer(mtry); if (mtry <= 0) stop("mtry should be at least 1.")
+  nodesize <- as.integer(nodesize); if (nodesize <= 0) stop("nodesize should be at least 1.")
+  ntrees  <- as.integer(ntrees); if (ntrees <= 0) stop("ntrees should be at least 1.")
+  seeds   <- as.integer(runif(ntrees) * 10000000)
   
   # Determine what kind of parallel to perform. By default, when
   # parallel=TRUE, use 2 less than the number of cores available, or 1
   # core if there are only 2 cores.
-
+  
   if (is.logical(parallel) || is.numeric(parallel))
   {
     if (is.logical(parallel) && parallel)
@@ -67,47 +42,48 @@ wsrf <- function(
       parallel <- detectCores()-2
       if (is.na(parallel) || parallel < 1) parallel <- 1
     }
-    model <- .wsrf(data, target, ntrees, nvars, weights, parallel, seeds, importance, FALSE)
+    model <- .wsrf(x, y, ntrees, mtry, nodesize, weights, parallel, seeds, importance, FALSE)
   }
   else if (is.vector(parallel))
   {
-    model <- .clwsrf(data, target, ntrees, nvars, weights, serverargs=parallel, seeds, importance, clusterlogfile)
+    model <- .clwsrf(x, y, ntrees, mtry, nodesize, weights, serverargs=parallel, seeds, importance, clusterlogfile)
   }
-  else 
+  else
     stop ("Parallel must be logical, character, or numeric.")
-
+  
   class(model) <- "wsrf"
-
+  
   return(model)
 }
 
 
-.wsrf <- function(data, target, ntrees, nvars, weights, parallel, seeds, importance, ispart)
+
+.wsrf <- function(x, y, ntrees, mtry, nodesize, weights, parallel, seeds, importance, ispart)
 {
-  model <- .Call("wsrf", data, target, ntrees, nvars,
-                 weights, parallel, seeds, importance, ispart, PACKAGE="wsrf")
+  model <- .Call("wsrf", x, y, ntrees, mtry, nodesize,
+      weights, parallel, seeds, importance, ispart, PACKAGE="wsrf")
   names(model) <- .WSRF_MODEL_NAMES
   return(model)
 }
 
 
-.localwsrf <- function(serverargs, data, target, nvars, weights, importance)
+.localwsrf <- function(serverargs, x, y, mtry, nodesize, weights, importance)
 {
   ntrees   <- serverargs[1][[1]]
   parallel <- serverargs[2][[1]]
   seeds    <- serverargs[3][[1]]
-
-  model <- .wsrf(data, target, ntrees, nvars, weights, parallel, seeds, importance, TRUE)
+  
+  model <- .wsrf(x, y, ntrees, mtry, nodesize, weights, parallel, seeds, importance, TRUE)
   return(model)
 }
 
 
-.clwsrf <- function(data, target, ntrees, nvars, weights, serverargs, seeds, importance, clusterlogfile)
+.clwsrf <- function(x, y, ntrees, mtry, nodesize, weights, serverargs, seeds, importance, clusterlogfile)
 {
   # Multiple cores on multiple servers.
   # where serverargs like c("apollo9", "apollo10", "apollo11", "apollo12")
   # or c(apollo9=5, apollo10=8, apollo11=-1)
-
+  
   determineCores <- function()
   {
     if (.Platform$OS.type == "windows") return(1)
@@ -118,14 +94,14 @@ wsrf <- function(
     else
       return(1)
   }
-
+  
   if (is.vector(serverargs, "character"))
   {
     nodes <- serverargs
-
+    
     if (missing(clusterlogfile)) cl <- makeCluster(nodes)
     else cl <- makeCluster(nodes, outfile=clusterlogfile)
-
+    
     clusterEvalQ(cl, require(wsrf))
     parallels <- unlist(clusterCall(cl, determineCores))
   }
@@ -135,24 +111,24 @@ wsrf <- function(
     
     if (missing(clusterlogfile)) cl <- makeCluster(nodes)
     else cl <- makeCluster(nodes, outfile=clusterlogfile)
-
+    
     clusterEvalQ(cl, require(wsrf))
     parallels <- unlist(clusterCall(cl, determineCores))
     parallels <- ifelse(serverargs > 0, serverargs, parallels)
   }
   else
     stop ("Parallel must be a vector of mode character/numeric.")
-
+  
   nservers <- length(nodes)
-
+  
   # just make sure each node has different RNGs in C code, time is
   # part of the seed, so this call won't make a reproducible result
-
+  
   clusterSetRNGStream(cl)
-
+  
   # follow specification in "serverargs", calculate corresponding tree
   # number for each node
-
+  
   nTreesPerNode <- floor(ntrees / sum(parallels)) * parallels
   nTreesLeft    <- ntrees %% sum(parallels)
   #    cumsumParallels <- cumsum(parallels)
@@ -164,32 +140,32 @@ wsrf <- function(
   #        else
   #            leftPerNode[index] <- nTreesLeft - cumsumParallels[index - 1]
   #    }
-
+  
   ones        <- rep(1, length(parallels))
   leftPerNode <- floor(nTreesLeft / sum(ones)) * ones
   left        <- nTreesLeft %% sum(ones)
   leftPerNode <- leftPerNode + c(rep(1, left), rep(0, length(parallels) - left))
-
+  
   nTreesPerNode <- nTreesPerNode + leftPerNode
   
   parallels <- parallels[which(nTreesPerNode > 0)]
   parallels <- as.integer(parallels)
-
+  
   nTreesPerNode <- nTreesPerNode[which(nTreesPerNode > 0)]
   nTreesPerNode <- as.integer(nTreesPerNode)
   
   seedsPerNode <- split(seeds, rep(1:nservers, nTreesPerNode))
   
   forests <- parRapply(cl, cbind(nTreesPerNode, parallels, seedsPerNode),
-                       .localwsrf, data, target, nvars, weights, importance)
+      .localwsrf, x, y, mtry, nodesize, weights, importance)
   stopCluster(cl)
   model <- .reduce.wsrf(forests)
   
   # "afterReduceForCluster" is used for statistics.
-  .Call("afterReduceForCluster", model, data, target, PACKAGE="wsrf")
-
+  .Call("afterReduceForCluster", model, x, y, PACKAGE="wsrf")
+  
   class(model) <- "wsrf"
-
+  
   return(model)
 }
 
@@ -200,7 +176,8 @@ wsrf <- function(
   
   packageStartupMessage(wsrfDescription)
   packageStartupMessage(paste("Version", wsrfVersion))
-  packageStartupMessage("@VERSION_INFO@")
+  packageStartupMessage("Use C++ standard thread library for parallel computing")
+#  packageStartupMessage("With parallel computing disabled")
 #  packageStartupMessage("Type wsrfNews() to see new features/changes/bug fixes.")
 }
 
@@ -225,25 +202,28 @@ wsrf <- function(
 .C_S2                 <- "c_s2";               .C_S2_IDX                 <- 16;
 .WEIGHTS              <- "useweights";         .WEIGHTS_IDX              <- 17;
 .MTRY                 <- "mtry";               .MTRY_IDX                 <- 18;
+.NODESIZE             <- "nodesize";           .NODESIZE_IDX             <- 19;
 
-.WSRF_MODEL_SIZE      <- 18
-.WSRF_MODEL_NAMES     <- c(.META,
-                           .TARGET_DATA,
-                           .TREES,
-                           .TREE_OOB_ERROR_RATES,
-                           .OOB_SETS,
-                           .OOB_PREDICT_LABELS,
-                           .TREE_IGR_IMPORTANCE,
-                           .PREDICTED,
-                           .OOB_TIMES,
-                           .CONFUSION,
-                           .IMPORTANCE,
-                           .IMPORTANCESD,
-                           .RF_OOB_ERROR_RATE,
-                           .STRENGTH,
-                           .CORRELATION,
-                           .C_S2,
-                           .WEIGHTS,
-                           .MTRY)
+.WSRF_MODEL_SIZE      <- 19
+.WSRF_MODEL_NAMES     <- c(
+    .META,
+    .TARGET_DATA,
+    .TREES,
+    .TREE_OOB_ERROR_RATES,
+    .OOB_SETS,
+    .OOB_PREDICT_LABELS,
+    .TREE_IGR_IMPORTANCE,
+    .PREDICTED,
+    .OOB_TIMES,
+    .CONFUSION,
+    .IMPORTANCE,
+    .IMPORTANCESD,
+    .RF_OOB_ERROR_RATE,
+    .STRENGTH,
+    .CORRELATION,
+    .C_S2,
+    .WEIGHTS,
+    .MTRY,
+    .NODESIZE)
 
 
