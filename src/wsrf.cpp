@@ -10,7 +10,7 @@ using namespace std;
 SEXP wsrf (
     SEXP xSEXP,         // Data.
     SEXP ySEXP,         // Target variable name.
-    SEXP ntreesSEXP,     // Number of trees.
+    SEXP ntreeSEXP,     // Number of trees.
     SEXP nvarsSEXP,      // Number of variables.
     SEXP minnodeSEXP,    // Minimum node size.
     SEXP weightsSEXP,    // Whether use weights.
@@ -31,7 +31,7 @@ SEXP wsrf (
 
 
         RForest rf (&train_set, &targ_data, &meta_data,
-                    Rcpp::as<int>(ntreesSEXP), Rcpp::as<int>(nvarsSEXP), Rcpp::as<int>(minnodeSEXP), Rcpp::as<bool>(weightsSEXP),
+                    Rcpp::as<int>(ntreeSEXP), Rcpp::as<int>(nvarsSEXP), Rcpp::as<int>(minnodeSEXP), Rcpp::as<bool>(weightsSEXP),
                     Rcpp::as<bool>(importanceSEXP), seedsSEXP);
 
         volatile bool interrupt = false;
@@ -63,7 +63,7 @@ SEXP wsrf (
                     // check interruption
                     if (check_interrupt()) {
                         interrupt = true;
-                        throw interrupt_exception("The random forest model building is interrupted.");
+                        throw interrupt_exception(INTERRUPT_MSG);
                     }
 
                     // check RF thread completion
@@ -146,18 +146,8 @@ SEXP predict (SEXP wsrfSEXP, SEXP xSEXP, SEXP typeSEXP) {
         Dataset    test_set  (xSEXP, &meta_data, false);
         RForest    rf        (wsrf_R, &meta_data, NULL);
 
-        string type = Rcpp::as<string>(typeSEXP);
-        if (type == "aprob") {
-            return rf.predictMatrix(&test_set, &RForest::predictAprobVec);
-        } else if (type == "waprob") {
-            return rf.predictMatrix(&test_set, &RForest::predictWAprobVec);
-        } else if (type == "prob") {
-            return rf.predictMatrix(&test_set, &RForest::predictProbVec);
-        } else if (type == "vote") {
-            return rf.predictMatrix(&test_set, &RForest::predictLabelFreqCount);
-        } else {
-            return rf.predictClassVec(&test_set);
-        }
+        int type = Rcpp::as<int>(typeSEXP);
+        return rf.predict(&test_set, type);
 
     END_RCPP
 }

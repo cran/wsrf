@@ -35,7 +35,7 @@ length(test <- setdiff(seq_len(nrow(ds)), train))
 #  wsrf(x,
 #       y,
 #       mtry=floor(log2(length(x))+1),
-#       ntrees=500,
+#       ntree=500,
 #       weights=TRUE,
 #       parallel=TRUE,
 #       na.action=na.fail,
@@ -51,9 +51,9 @@ print(model.wsrf.1)
 print(model.wsrf.1, 1)  # Print tree 1.
 
 ## ----usage_evaluate------------------------------------------------------
-cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="class")
+cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="class")$class
 actual <- ds[test, target]
-(accuracy.wsrf <- sum(cl == actual, na.rm=TRUE)/length(actual))
+(accuracy.wsrf <- mean(cl == actual, na.rm=TRUE))
 
 ## ----usage_build_another, message=FALSE----------------------------------
 # Here we build another model without weighting.

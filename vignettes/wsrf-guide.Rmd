@@ -110,7 +110,7 @@ and
 wsrf(x,
      y,
      mtry=floor(log2(length(x))+1),
-     ntrees=500,
+     ntree=500,
      weights=TRUE,
      parallel=TRUE,
      na.action=na.fail,
@@ -122,7 +122,7 @@ wsrf(x,
 
 We use the training dataset to build a random forest model.  All
 parameters, except `formula` and `data`, use their default values:
-`500` for `ntrees` --- the number of trees; `TRUE` for `weights` ---
+`500` for `ntree` --- the number of trees; `TRUE` for `weights` ---
 weighted subspace random forest or random forest; `TRUE` for
 `parallel` --- use multi-thread or other options, etc.
 
@@ -136,9 +136,9 @@ print(model.wsrf.1, 1)  # Print tree 1.
 Then, `predict` the classes of test data.
 
 ```{r usage_evaluate}
-cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="class")
+cl <- predict(model.wsrf.1, newdata=ds[test, vars], type="class")$class
 actual <- ds[test, target]
-(accuracy.wsrf <- sum(cl == actual, na.rm=TRUE)/length(actual))
+(accuracy.wsrf <- mean(cl == actual, na.rm=TRUE))
 ```
 
 Thus, we have built a model that is around `r round(100*accuracy.wsrf,
@@ -174,6 +174,6 @@ nodes to use, or a named integer vector, whose values of the elements
 give how many threads to use for model building, in other words, how
 many trees built simultaneously.  More detail descriptions about
 **wsrf** are presented in the
-[manual](https://cran.r-project.org/web/packages/wsrf/wsrf.pdf).
+[manual](https://cran.r-project.org/package=wsrf/wsrf.pdf).
 
 ## References ##

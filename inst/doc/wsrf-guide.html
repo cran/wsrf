@@ -12,7 +12,7 @@
 
 <meta name="author" content="He Zhao, Graham Williams" />
 
-<meta name="date" content="2016-09-10" />
+<meta name="date" content="2016-10-28" />
 
 <title>A Quick Start Guide for wsrf</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">A Quick Start Guide for wsrf</h1>
 <h4 class="author"><em>He Zhao, Graham Williams</em></h4>
-<h4 class="date"><em>2016-09-10</em></h4>
+<h4 class="date"><em>2016-10-28</em></h4>
 
 
 <div id="TOC">
@@ -143,7 +143,7 @@ ds[target] &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ds[[t
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">wsrf</span>(x,
      y,
      <span class="dt">mtry=</span><span class="kw">floor</span>(<span class="kw">log2</span>(<span class="kw">length</span>(x))+<span class="dv">1</span>),
-     <span class="dt">ntrees=</span><span class="dv">500</span>,
+     <span class="dt">ntree=</span><span class="dv">500</span>,
      <span class="dt">weights=</span><span class="ot">TRUE</span>,
      <span class="dt">parallel=</span><span class="ot">TRUE</span>,
      <span class="dt">na.action=</span>na.fail,
@@ -151,7 +151,7 @@ ds[target] &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ds[[t
      <span class="dt">nodesize=</span><span class="dv">2</span>,
      clusterlogfile,
      ...)</code></pre></div>
-<p>We use the training dataset to build a random forest model. All parameters, except <code>formula</code> and <code>data</code>, use their default values: <code>500</code> for <code>ntrees</code> — the number of trees; <code>TRUE</code> for <code>weights</code> — weighted subspace random forest or random forest; <code>TRUE</code> for <code>parallel</code> — use multi-thread or other options, etc.</p>
+<p>We use the training dataset to build a random forest model. All parameters, except <code>formula</code> and <code>data</code>, use their default values: <code>500</code> for <code>ntree</code> — the number of trees; <code>TRUE</code> for <code>weights</code> — weighted subspace random forest or random forest; <code>TRUE</code> for <code>parallel</code> — use multi-thread or other options, etc.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;wsrf&quot;</span>)
 model.wsrf<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span><span class="ot">FALSE</span>)
 <span class="kw">print</span>(model.wsrf<span class="fl">.1</span>)</code></pre></div>
@@ -245,11 +245,11 @@ model.wsrf<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="
 ##  .. 16) Temp3pm &lt;= 7.3   [No] (1 0) *
 ##  .. 16) Temp3pm &gt;  7.3   [Yes] (0 1) *</code></pre>
 <p>Then, <code>predict</code> the classes of test data.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">predict</span>(model.wsrf<span class="fl">.1</span>, <span class="dt">newdata=</span>ds[test, vars], <span class="dt">type=</span><span class="st">&quot;class&quot;</span>)
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">predict</span>(model.wsrf<span class="fl">.1</span>, <span class="dt">newdata=</span>ds[test, vars], <span class="dt">type=</span><span class="st">&quot;class&quot;</span>)$class
 actual &lt;-<span class="st"> </span>ds[test, target]
-(accuracy.wsrf &lt;-<span class="st"> </span><span class="kw">sum</span>(cl ==<span class="st"> </span>actual, <span class="dt">na.rm=</span><span class="ot">TRUE</span>)/<span class="kw">length</span>(actual))</code></pre></div>
-<pre><code>## [1] 0.8454545</code></pre>
-<p>Thus, we have built a model that is around 85% accurate on unseen testing data.</p>
+(accuracy.wsrf &lt;-<span class="st"> </span><span class="kw">mean</span>(cl ==<span class="st"> </span>actual, <span class="dt">na.rm=</span><span class="ot">TRUE</span>))</code></pre></div>
+<pre><code>## [1] 0.8363636</code></pre>
+<p>Thus, we have built a model that is around 84% accurate on unseen testing data.</p>
 <p>Using different random seed, we obtain another model.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># Here we build another model without weighting.</span>
 model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">weights=</span><span class="ot">FALSE</span>, <span class="dt">parallel=</span><span class="ot">FALSE</span>)
@@ -258,13 +258,13 @@ model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="
 ## 
 ##   No. of variables tried at each split: 5
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.15
+##                  Out-of-Bag Error Rate: 0.14
 ##                               Strength: 0.59
-##                            Correlation: 0.19
+##                            Correlation: 0.20
 ## 
 ## Confusion matrix:
 ##      No Yes class.error
-## No  210   5        0.02
+## No  212   3        0.01
 ## Yes  33   8        0.80</code></pre>
 <p>We can also derive a subset of the forest from the model or a combination of multiple forests.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">submodel.wsrf &lt;-<span class="st"> </span><span class="kw">subset.wsrf</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span>:<span class="dv">150</span>)
@@ -279,26 +279,26 @@ model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="
 ## 
 ## Confusion matrix:
 ##      No Yes class.error
-## No  208   7        0.03
-## Yes  29  12        0.71</code></pre>
+## No  206   9        0.04
+## Yes  28  13        0.68</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bigmodel.wsrf &lt;-<span class="st"> </span><span class="kw">combine.wsrf</span>(model.wsrf<span class="fl">.1</span>, model.wsrf<span class="fl">.2</span>)
 <span class="kw">print</span>(bigmodel.wsrf)</code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 1000 trees.
 ## 
 ##   No. of variables tried at each split: 5
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.15
+##                  Out-of-Bag Error Rate: 0.14
 ##                               Strength: 0.61
 ##                            Correlation: 0.18
 ## 
 ## Confusion matrix:
 ##      No Yes class.error
-## No  210   5        0.02
+## No  211   4        0.02
 ## Yes  33   8        0.80</code></pre>
 <p>Next, we will specify building the model on a cluster of servers.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">servers &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;node&quot;</span>, <span class="dv">31</span>:<span class="dv">40</span>)
 model.wsrf<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span>servers)</code></pre></div>
-<p>All we need is a character verctor specifying the hostnames of which nodes to use, or a named integer vector, whose values of the elements give how many threads to use for model building, in other words, how many trees built simultaneously. More detail descriptions about <strong>wsrf</strong> are presented in the <a href="https://cran.r-project.org/web/packages/wsrf/wsrf.pdf">manual</a>.</p>
+<p>All we need is a character verctor specifying the hostnames of which nodes to use, or a named integer vector, whose values of the elements give how many threads to use for model building, in other words, how many trees built simultaneously. More detail descriptions about <strong>wsrf</strong> are presented in the <a href="https://cran.r-project.org/package=wsrf/wsrf.pdf">manual</a>.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
@@ -310,7 +310,7 @@ model.wsrf<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="
 <p>Eddelbuettel, Dirk, and Romain François. 2011. “Rcpp: Seamless R and C++ Integration.” <em>Journal of Statistical Software</em> 40 (8): 1–18. <a href="http://www.jstatsoft.org/v40/i08/" class="uri">http://www.jstatsoft.org/v40/i08/</a>.</p>
 </div>
 <div id="ref-rattle">
-<p>Williams, Graham J. 2011. <em>Data Mining with Rattle and R: The Art of Excavating Data for Knowledge Discovery</em>. Use R! Springer. <a href="http://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896" class="uri">http://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896</a>.</p>
+<p>Williams, Graham J. 2011. <em>Data Mining with Rattle and R: The Art of Excavating Data for Knowledge Discovery</em>. Use R! Springer. <a href="https://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896" class="uri">https://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896</a>.</p>
 </div>
 <div id="ref-xu2012classifying">
 <p>Xu, Baoxun, Joshua Zhexue Huang, Graham Williams, Qiang Wang, and Yunming Ye. 2012. “Classifying Very High-Dimensional Data with Random Forests Built from Small Subspaces.” <em>International Journal of Data Warehousing and Mining (IJDWM)</em> 8 (2). IGI Global: 44–63.</p>
