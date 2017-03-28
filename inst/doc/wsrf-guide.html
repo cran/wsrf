@@ -4,7 +4,7 @@
 
 <head>
 
-<meta charset="utf-8">
+<meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
 
@@ -12,7 +12,7 @@
 
 <meta name="author" content="He Zhao, Graham Williams" />
 
-<meta name="date" content="2016-10-28" />
+<meta name="date" content="2017-03-28" />
 
 <title>A Quick Start Guide for wsrf</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">A Quick Start Guide for wsrf</h1>
 <h4 class="author"><em>He Zhao, Graham Williams</em></h4>
-<h4 class="date"><em>2016-10-28</em></h4>
+<h4 class="date"><em>2017-03-28</em></h4>
 
 
 <div id="TOC">
@@ -88,8 +88,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 </div>
 <div id="requirements-and-installation-notes" class="section level2">
 <h2>Requirements and Installation Notes</h2>
-<p>Currently, <strong>wsrf</strong> requires R (&gt;= 3.3.0), <a href="https://cran.r-project.org/package=Rcpp"><strong>Rcpp</strong></a> (&gt;= 0.10.2) <span class="citation">(Eddelbuettel and François 2011; Eddelbuettel 2013)</span>. For the use of multi-threading, a C++ compiler with <a href="https://en.wikipedia.org/wiki/C%2B%2B11">C++11</a> standard support of threads is required. To install the latest version of the package, from within R run:</p>
+<p>Currently, <strong>wsrf</strong> requires R (&gt;= 3.3.0), <a href="https://cran.r-project.org/package=Rcpp"><strong>Rcpp</strong></a> (&gt;= 0.10.2) <span class="citation">(Eddelbuettel and François 2011; Eddelbuettel 2013)</span>. For the use of multi-threading, a C++ compiler with <a href="https://en.wikipedia.org/wiki/C%2B%2B11">C++11</a> standard support of threads is required. To install the latest stable version of the package, from within R run:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">install.packages</span>(<span class="st">&quot;wsrf&quot;</span>)</code></pre></div>
+<p>or the latest development version:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">devtools::<span class="kw">install_github</span>(<span class="st">&quot;simonyansenzhao/wsrf&quot;</span>)</code></pre></div>
 <p>The version of R before 3.3.0 doesn’t provide fully support of C++11, thus we provided other options for installation of wsrf. From 1.6.0, we drop the support for those options. One can find the usage in the documentation from previous version if interested.</p>
 </div>
 <div id="usage" class="section level2">

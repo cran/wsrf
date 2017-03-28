@@ -1,6 +1,9 @@
 ## ----eval=FALSE----------------------------------------------------------
 #  install.packages("wsrf")
 
+## ----eval=FALSE----------------------------------------------------------
+#  devtools::install_github("simonyansenzhao/wsrf")
+
 ## ----usage_load, message=FALSE-------------------------------------------
 library("rattle")
 ds <- weather
