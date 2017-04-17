@@ -1,8 +1,8 @@
 Package: wsrf
 Type: Package
 Title: Weighted Subspace Random Forest for Classification
-Version: 1.7.10
-Date: 2017-03-28
+Version: 1.7.13
+Date: 2017-04-17
 Authors@R: c(person(given = "Qinghan",
                     family = "Meng",
 		    email = "qinghan.meng@gmail.com",
@@ -44,12 +44,13 @@ Suggests: rattle (>= 2.6.26), randomForest (>= 4.6.7), party (>=
         1.0.7), stringr (>= 0.6.2), knitr (>= 1.5)
 VignetteBuilder: knitr
 NeedsCompilation: yes
+SystemRequirements: C++11
 Classification/ACM-2012: Computing methodologies ~ Classification and
         regression trees, Computing methodologies ~ Supervised learning
         by classification, Computing methodologies ~ Massively parallel
         and high-performance simulations, Computing methodologies ~
         Distributed simulation
-Packaged: 2017-03-28 02:31:58 UTC; simon
+Packaged: 2017-04-17 08:40:18 UTC; simon
 Author: Qinghan Meng [aut],
   He Zhao [aut, cre],
   Graham J. Williams [aut],
@@ -58,4 +59,4 @@ Author: Qinghan Meng [aut],
   Joshua Zhexue Huang [aut]
 Maintainer: He Zhao <Simon.Yansen.Zhao@gmail.com>
 Repository: CRAN
-Date/Publication: 2017-03-28 06:05:56 UTC
+Date/Publication: 2017-04-17 13:53:47 UTC
