@@ -12,7 +12,7 @@
 
 <meta name="author" content="He Zhao, Graham Williams" />
 
-<meta name="date" content="2017-04-17" />
+<meta name="date" content="2017-09-25" />
 
 <title>A Quick Start Guide for wsrf</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">A Quick Start Guide for wsrf</h1>
 <h4 class="author"><em>He Zhao, Graham Williams</em></h4>
-<h4 class="date"><em>2017-04-17</em></h4>
+<h4 class="date"><em>2017-09-25</em></h4>
 
 
 <div id="TOC">
@@ -97,8 +97,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div id="usage" class="section level2">
 <h2>Usage</h2>
 <p>This section demonstrates how to use <strong>wsrf</strong>, especially on a cluster of machines.</p>
-<p>The example uses a small dataset <em>weather</em> from <a href="https://cran.r-project.org/package=rattle"><strong>rattle</strong></a> <span class="citation">(G. J. Williams 2011)</span>. See the help page of <strong>rattle</strong> in R (<code>?weather</code>) for more details of <em>weather</em>. Below are the basic information of it.</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rattle&quot;</span>)
+<p>The example uses a small dataset <em>weather</em> from <a href="https://cran.r-project.org/package=rattle.data"><strong>rattle.data</strong></a> <span class="citation">(G. J. Williams 2011)</span>. See the help page of <strong>rattle.data</strong> in R (<code>?weather</code>) for more details of <em>weather</em>. Below are the basic information of it.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(<span class="st">&quot;rattle.data&quot;</span>)
 ds &lt;-<span class="st"> </span>weather
 <span class="kw">dim</span>(ds)</code></pre></div>
 <pre><code>## [1] 366  24</code></pre>
@@ -170,82 +170,44 @@ model.wsrf<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="
 ## No  208   7        0.03
 ## Yes  28  13        0.68</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">print</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span>)  <span class="co"># Print tree 1.</span></code></pre></div>
-<pre><code>## Tree 1 has 16 tests (internal nodes), with OOB error rate 0.2637:
+<pre><code>## Tree 1 has 18 tests (internal nodes), with OOB error rate 0.1753:
 ## 
-##  1) Humidity3pm &lt;= 73
-##  .. 2) WindSpeed9am &lt;= 35
-##  .. .. 3) Pressure3pm &lt;= 1010.2
-##  .. .. .. 4) Pressure9am &lt;= 1008.4
-##  .. .. .. .. 5) WindDir3pm == N   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == NNE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == NE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == ENE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == E   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == ESE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == SE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == SSE   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == S   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == SSW   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == SW   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == WSW   [No] (0.92 0.083) *
-##  .. .. .. .. 5) WindDir3pm == W   [No] (1 0) *
-##  .. .. .. .. 5) WindDir3pm == WNW   [No] (1 0) *
-##  .. .. .. .. 5) WindDir3pm == NW   [Yes] (0 1) *
-##  .. .. .. .. 5) WindDir3pm == NNW   [No] (0.92 0.083) *
-##  .. .. .. 4) Pressure9am &gt;  1008.4
-##  .. .. .. .. 6) Pressure3pm &lt;= 1006.5   [No] (0.5 0.5) *
-##  .. .. .. .. 6) Pressure3pm &gt;  1006.5   [Yes] (0 1) *
-##  .. .. 3) Pressure3pm &gt;  1010.2
-##  .. .. .. 7) Cloud3pm &lt;= 7
-##  .. .. .. .. 8) Sunshine &lt;= 8.7
-##  .. .. .. .. .. 9) Temp3pm &lt;= 14.7   [No] (1 0) *
-##  .. .. .. .. .. 9) Temp3pm &gt;  14.7
-##  .. .. .. .. .. .. 10) Temp9am &lt;= 6.8   [Yes] (0 1) *
-##  .. .. .. .. .. .. 10) Temp9am &gt;  6.8
-##  .. .. .. .. .. .. .. 11) WindDir3pm == N   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == NNE   [No] (0.87 0.13) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == NE   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == ENE   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == E   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == ESE   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == SE   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == SSE   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == S   [No] (0.87 0.13) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == SSW   [No] (0.87 0.13) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == SW   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == WSW   [No] (0.87 0.13) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == W   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == WNW   [No] (1 0) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == NW
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == N   [No] (1 0) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == NNE   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == NE   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == ENE   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == E   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == ESE   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == SE   [No] (1 0) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == SSE   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == S   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == SSW   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == SW   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == WSW   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == W   [No] (1 0) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == WNW   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == NW   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. .. 12) WindDir9am == NNW   [No] (0.88 0.12) *
-##  .. .. .. .. .. .. .. 11) WindDir3pm == NNW   [Yes] (0 1) *
-##  .. .. .. .. 8) Sunshine &gt;  8.7
-##  .. .. .. .. .. 13) Humidity9am &lt;= 47
-##  .. .. .. .. .. .. 14) Pressure9am &lt;= 1015.3   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. 14) Pressure9am &gt;  1015.3   [No] (1 0) *
-##  .. .. .. .. .. 13) Humidity9am &gt;  47   [No] (1 0) *
-##  .. .. .. 7) Cloud3pm &gt;  7
-##  .. .. .. .. 15) Humidity3pm &lt;= 55   [Yes] (0 1) *
-##  .. .. .. .. 15) Humidity3pm &gt;  55   [No] (1 0) *
-##  .. 2) WindSpeed9am &gt;  35   [Yes] (0 1) *
-##  1) Humidity3pm &gt;  73
-##  .. 16) Temp3pm &lt;= 7.3   [No] (1 0) *
-##  .. 16) Temp3pm &gt;  7.3   [Yes] (0 1) *</code></pre>
+##  1) MinTemp &lt;= 17.9
+##  .. 2) Cloud3pm &lt;= 7
+##  .. .. 3) WindGustSpeed &lt;= 65
+##  .. .. .. 4) Pressure3pm &lt;= 1009.7
+##  .. .. .. .. 5) MaxTemp &lt;= 10.6   [Yes] (0 1) *
+##  .. .. .. .. 5) MaxTemp &gt;  10.6
+##  .. .. .. .. .. 6) Humidity3pm &lt;= 40   [No] (1 0) *
+##  .. .. .. .. .. 6) Humidity3pm &gt;  40   [No] (0.5 0.5) *
+##  .. .. .. 4) Pressure3pm &gt;  1009.7
+##  .. .. .. .. 7) Humidity9am &lt;= 93
+##  .. .. .. .. .. 8) Temp3pm &lt;= 16.8   [No] (1 0) *
+##  .. .. .. .. .. 8) Temp3pm &gt;  16.8
+##  .. .. .. .. .. .. 9) Sunshine &lt;= 6.1
+##  .. .. .. .. .. .. .. 10) MinTemp &lt;= 8.8   [Yes] (0 1) *
+##  .. .. .. .. .. .. .. 10) MinTemp &gt;  8.8   [No] (1 0) *
+##  .. .. .. .. .. .. 9) Sunshine &gt;  6.1
+##  .. .. .. .. .. .. .. 11) MinTemp &lt;= -0.3   [No] (0.5 0.5) *
+##  .. .. .. .. .. .. .. 11) MinTemp &gt;  -0.3
+##  .. .. .. .. .. .. .. .. 12) WindGustSpeed &lt;= 48   [No] (1 0) *
+##  .. .. .. .. .. .. .. .. 12) WindGustSpeed &gt;  48
+##  .. .. .. .. .. .. .. .. .. 13) Temp9am &lt;= 17.5   [No] (0.5 0.5) *
+##  .. .. .. .. .. .. .. .. .. 13) Temp9am &gt;  17.5   [No] (1 0) *
+##  .. .. .. .. 7) Humidity9am &gt;  93
+##  .. .. .. .. .. 14) Pressure3pm &lt;= 1019.7   [Yes] (0.33 0.67) *
+##  .. .. .. .. .. 14) Pressure3pm &gt;  1019.7   [No] (1 0) *
+##  .. .. 3) WindGustSpeed &gt;  65
+##  .. .. .. 15) Humidity9am &lt;= 43   [No] (1 0) *
+##  .. .. .. 15) Humidity9am &gt;  43
+##  .. .. .. .. 16) Cloud3pm &lt;= 1   [No] (0.5 0.5) *
+##  .. .. .. .. 16) Cloud3pm &gt;  1   [Yes] (0 1) *
+##  .. 2) Cloud3pm &gt;  7
+##  .. .. 17) WindSpeed9am &lt;= 6   [Yes] (0 1) *
+##  .. .. 17) WindSpeed9am &gt;  6
+##  .. .. .. 18) RainToday == No   [No] (0.67 0.33) *
+##  .. .. .. 18) RainToday == Yes   [No] (1 0) *
+##  1) MinTemp &gt;  17.9   [Yes] (0 1) *</code></pre>
 <p>Then, <code>predict</code> the classes of test data.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">cl &lt;-<span class="st"> </span><span class="kw">predict</span>(model.wsrf<span class="fl">.1</span>, <span class="dt">newdata=</span>ds[test, vars], <span class="dt">type=</span><span class="st">&quot;class&quot;</span>)$class
 actual &lt;-<span class="st"> </span>ds[test, target]
@@ -281,21 +243,21 @@ model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="
 ## 
 ## Confusion matrix:
 ##      No Yes class.error
-## No  206   9        0.04
-## Yes  28  13        0.68</code></pre>
+## No  208   7        0.03
+## Yes  29  12        0.71</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">bigmodel.wsrf &lt;-<span class="st"> </span><span class="kw">combine.wsrf</span>(model.wsrf<span class="fl">.1</span>, model.wsrf<span class="fl">.2</span>)
 <span class="kw">print</span>(bigmodel.wsrf)</code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 1000 trees.
 ## 
 ##   No. of variables tried at each split: 5
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.14
+##                  Out-of-Bag Error Rate: 0.15
 ##                               Strength: 0.61
 ##                            Correlation: 0.18
 ## 
 ## Confusion matrix:
 ##      No Yes class.error
-## No  211   4        0.02
+## No  210   5        0.02
 ## Yes  33   8        0.80</code></pre>
 <p>Next, we will specify building the model on a cluster of servers.</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">servers &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;node&quot;</span>, <span class="dv">31</span>:<span class="dv">40</span>)
@@ -347,7 +309,7 @@ window.onload = function() {
   (function () {
     var script = document.createElement("script");
     script.type = "text/javascript";
-    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
     document.getElementsByTagName("head")[0].appendChild(script);
   })();
 </script>

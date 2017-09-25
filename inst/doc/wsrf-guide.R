@@ -5,7 +5,7 @@
 #  devtools::install_github("simonyansenzhao/wsrf")
 
 ## ----usage_load, message=FALSE-------------------------------------------
-library("rattle")
+library("rattle.data")
 ds <- weather
 dim(ds)
 names(ds)
