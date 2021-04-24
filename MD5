@@ -1,4 +1,4 @@
-36a4efb5a18418326f64863dd0ef7f9d *DESCRIPTION
+76c5857fe3a8fcc64096face32c5f562 *DESCRIPTION
 b71e45f2dbfe3a0862ed4944d713c62e *NAMESPACE
 855bacb97f3fc91f78404e7ffeadd910 *R/combine.wsrf.R
 237e50262c2a4d3d33ce9b1790cc0f54 *R/correlation.wsrf.R
@@ -12,13 +12,13 @@ bea876a8afa6a138c6bdabc1166c338d *R/varCounts.wsrf.R
 85f2aa41c49211ea87aee17645ecca91 *R/wsrf.R
 db002384efee44b5f2a3f360286d28c7 *R/wsrf.default.R
 e7521902cb5783edf89df08853f22220 *R/wsrf.formula.R
-908238bd8ff8e1c21e38023da03c89da *README.md
-55efdaf510da133c94e7947c6fd1dd06 *build/vignette.rds
+e76dd2f9e97a17f3196b3ac013bb9b5f *README.md
+8180b71a433a22f6f93d9a3d075aa3b0 *build/vignette.rds
 b38621ec48ad8d476cb38b4f70a7d44f *inst/CITATION
-0420414c272d008184ca0082504a580a *inst/NEWS.Rd
-82fc162986e31da2a094ee7a46d126d7 *inst/doc/wsrf-guide.R
+e7d0b0ddd3285a9fb52d7bdc7b207a72 *inst/NEWS.Rd
+5f964d62299f70f099307212b73a5f74 *inst/doc/wsrf-guide.R
 bfaae6121b39b33498ddaa897ad49249 *inst/doc/wsrf-guide.Rmd
-d62453452e01c8599f65dd2217f40f1f *inst/doc/wsrf-guide.html
+a2ad8d4c14f014bd242316ff36065212 *inst/doc/wsrf-guide.html
 e33e90a5c3954bbebc108b88e74b2846 *man/combine.wsrf.Rd
 cb6112b2a6352ba26f18b6c5a1469726 *man/correlation.wsrf.Rd
 d6ca6b60c7da03e15c517af527cd12e6 *man/importance.wsrf.Rd
@@ -33,7 +33,7 @@ d61fce6f708dc85c1291835a0cbd909e *src/IGR.cpp
 c8e09942981d93e95f824d1a2ee17533 *src/IGR.h
 67edb95d208390955e5a28d9994ede69 *src/Makevars
 edb28cc1f2e2aa60a6efb806760f5206 *src/Makevars.win
-9ee269309121bc3e202349d9cbdeb1f9 *src/c4_5_var_selector.cpp
+d242792ed1dae730c1d531005ea61fc4 *src/c4_5_var_selector.cpp
 cc5a595248406ce80c4439b3132543be *src/c4_5_var_selector.h
 9c15cbc7386cc19424a562e5a99c3020 *src/dataset.cpp
 39f4da85ff8b0005820d691052333a1d *src/dataset.h
@@ -54,4 +54,4 @@ fea21a320c2d9e8d6fb396f7be8e9560 *src/wsrf.h
 e322ef16fda27d37e2eff64a74558638 *tests/wsrftest.R
 056875dffea45d55929d798234338f78 *tests/wsrftest.Rout.save
 bfaae6121b39b33498ddaa897ad49249 *vignettes/wsrf-guide.Rmd
-e63491879e5e3e3e3c848b2c516b8bea *vignettes/wsrf-guide.bib
+cc9347d8723934038c7483b1cb772ce4 *vignettes/wsrf-guide.bib

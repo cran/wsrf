@@ -3,6 +3,39 @@
 
 \newcommand{\pkglink}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in wsrf version 1.7.20 (2021-04-24)}{
+  \subsection{Bug Fixes}{
+    \itemize{
+
+      \item Correct the uninitialized variable \code{pos} in
+      src/c4_5_var_selector.cpp.
+
+    }
+  }
+
+  \subsection{CRAN Checks}{
+    \itemize{
+
+      \item Suggest \pkglink{markdown} and \pkglink{rmarkdown} as
+      dependency (See
+      \href{https://github.com/yihui/knitr/issues/1864}{Move the
+      \pkglink{markdown} package from Imports to Suggests #1864}).
+
+    }
+  }
+
+  \subsection{Documentation}{
+    \itemize{
+
+      \item Add authors' ORCID identifiers.
+
+      \item Change http to https.
+
+    }
+  }
+
+}
+
 \section{Changes in wsrf version 1.7.17 (2017-09-25)}{
   \subsection{Bug Fixes}{
     \itemize{
@@ -20,7 +53,7 @@
     \itemize{
 
       \item Remove deprecated Make variables with prefix \code{CXX1X}
-      (\href{http://developer.r-project.org/blosxom.cgi/R-devel/NEWS/2017/04/01#n2017-04-01}{CHANGES
+      (\href{https://developer.r-project.org/blosxom.cgi/R-devel/NEWS/2017/04/01#n2017-04-01}{CHANGES
       IN R 3.4.0}).
 
     }
