@@ -3,6 +3,31 @@
 
 \newcommand{\pkglink}{\href{https://CRAN.R-project.org/package=#1}{\pkg{#1}}}
 
+\section{Changes in wsrf version 1.7.27 (2022-03-13)}{
+  \subsection{CRAN Checks}{
+    \itemize{
+
+      \item Drop the dependency on \pkglink{rattle.data} since it's not
+      available.
+
+    }
+  }
+
+  \subsection{Documentation}{
+    \itemize{
+
+      \item Use the \code{iris} dataset in examples.
+
+      \item Remove dependencies on \pkglink{party} and
+      \pkglink{markdown}.
+
+      \item Correct typos.
+
+    }
+  }
+
+}
+
 \section{Changes in wsrf version 1.7.22 (2021-10-10)}{
   \subsection{Documentation}{
     \itemize{
@@ -130,7 +155,7 @@
     \itemize{
 
       \item Fix bug introduced in version 1.6.25 when adding
-      \code{wsrf.default} for seperate inputs and response.
+      \code{wsrf.default} for separate inputs and response.
 
     }
   }
@@ -154,7 +179,7 @@
       \item Add a new argument \code{nodesize} to change the minimum
       node size.
 
-      \item Add a method \code{wsrf.default} to deal with seperate
+      \item Add a method \code{wsrf.default} to deal with separate
       inputs (\code{x}) and response (\code{y}), besides
       \code{wsrf.formula} with \code{formula}.
 
@@ -246,7 +271,7 @@
 
       \item Add more examples in the manual.
 
-      \item Update documentaion.
+      \item Update documentation.
 
       \item Change vignette from Rnw to Rmd.
 

@@ -12,7 +12,7 @@
 
 <meta name="author" content="He Zhao, Graham Williams" />
 
-<meta name="date" content="2021-10-10" />
+<meta name="date" content="2022-03-13" />
 
 <title>A Quick Start Guide for wsrf</title>
 
@@ -25,6 +25,7 @@
   div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
   ul.task-list{list-style: none;}
     </style>
+
 
 
 <style type="text/css">
@@ -356,7 +357,7 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 
 <h1 class="title toc-ignore">A Quick Start Guide for wsrf</h1>
 <h4 class="author">He Zhao, Graham Williams</h4>
-<h4 class="date">2021-10-10</h4>
+<h4 class="date">2022-03-13</h4>
 
 
 <div id="TOC">
@@ -383,224 +384,135 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 <div id="usage" class="section level2">
 <h2>Usage</h2>
 <p>This section demonstrates how to use <strong>wsrf</strong>, especially on a cluster of machines.</p>
-<p>The example uses a small dataset <em>weather</em> from <a href="https://cran.r-project.org/package=rattle.data"><strong>rattle.data</strong></a> <span class="citation">(Williams 2011)</span>. See the help page of <strong>rattle.data</strong> in R (<code>?weather</code>) for more details of <em>weather</em>. Below are the basic information of it.</p>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1"><span class="kw">library</span>(<span class="st">&quot;rattle.data&quot;</span>)</a>
-<a class="sourceLine" id="cb3-2" title="2">ds &lt;-<span class="st"> </span>weather</a>
-<a class="sourceLine" id="cb3-3" title="3"><span class="kw">dim</span>(ds)</a></code></pre></div>
-<pre><code>## [1] 366  24</code></pre>
+<p>The example uses a small dataset <em>iris</em> from R. See the help page in R (<code>?iris</code>) for more details of <em>iris</em>. Below are the basic information of it.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" title="1">ds &lt;-<span class="st"> </span>iris</a>
+<a class="sourceLine" id="cb3-2" title="2"><span class="kw">dim</span>(ds)</a></code></pre></div>
+<pre><code>## [1] 150   5</code></pre>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb5-1" title="1"><span class="kw">names</span>(ds)</a></code></pre></div>
-<pre><code>##  [1] &quot;Date&quot;          &quot;Location&quot;      &quot;MinTemp&quot;       &quot;MaxTemp&quot;      
-##  [5] &quot;Rainfall&quot;      &quot;Evaporation&quot;   &quot;Sunshine&quot;      &quot;WindGustDir&quot;  
-##  [9] &quot;WindGustSpeed&quot; &quot;WindDir9am&quot;    &quot;WindDir3pm&quot;    &quot;WindSpeed9am&quot; 
-## [13] &quot;WindSpeed3pm&quot;  &quot;Humidity9am&quot;   &quot;Humidity3pm&quot;   &quot;Pressure9am&quot;  
-## [17] &quot;Pressure3pm&quot;   &quot;Cloud9am&quot;      &quot;Cloud3pm&quot;      &quot;Temp9am&quot;      
-## [21] &quot;Temp3pm&quot;       &quot;RainToday&quot;     &quot;RISK_MM&quot;       &quot;RainTomorrow&quot;</code></pre>
-<p>Before building the model we need to prepare the training dataset. First we note the various roles played by the different variables, including identifying the irrelevant variables.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">target &lt;-<span class="st"> &quot;RainTomorrow&quot;</span></a>
-<a class="sourceLine" id="cb7-2" title="2">ignore &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;Date&quot;</span>, <span class="st">&quot;Location&quot;</span>, <span class="st">&quot;RISK_MM&quot;</span>)</a>
-<a class="sourceLine" id="cb7-3" title="3">(vars &lt;-<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">names</span>(ds), ignore))</a></code></pre></div>
-<pre><code>##  [1] &quot;MinTemp&quot;       &quot;MaxTemp&quot;       &quot;Rainfall&quot;      &quot;Evaporation&quot;  
-##  [5] &quot;Sunshine&quot;      &quot;WindGustDir&quot;   &quot;WindGustSpeed&quot; &quot;WindDir9am&quot;   
-##  [9] &quot;WindDir3pm&quot;    &quot;WindSpeed9am&quot;  &quot;WindSpeed3pm&quot;  &quot;Humidity9am&quot;  
-## [13] &quot;Humidity3pm&quot;   &quot;Pressure9am&quot;   &quot;Pressure3pm&quot;   &quot;Cloud9am&quot;     
-## [17] &quot;Cloud3pm&quot;      &quot;Temp9am&quot;       &quot;Temp3pm&quot;       &quot;RainToday&quot;    
-## [21] &quot;RainTomorrow&quot;</code></pre>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb9-1" title="1"><span class="kw">dim</span>(ds[vars])</a></code></pre></div>
-<pre><code>## [1] 366  21</code></pre>
+<pre><code>## [1] &quot;Sepal.Length&quot; &quot;Sepal.Width&quot;  &quot;Petal.Length&quot; &quot;Petal.Width&quot;  &quot;Species&quot;</code></pre>
+<p>Before building the model we need to prepare the training dataset. First we specify the target variable.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb7-1" title="1">target &lt;-<span class="st"> &quot;Species&quot;</span></a>
+<a class="sourceLine" id="cb7-2" title="2">vars &lt;-<span class="st"> </span><span class="kw">names</span>(ds)</a></code></pre></div>
 <p>Next we deal with missing values, using <code>na.roughfix()</code> from <strong>randomForest</strong> to take care of them.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb11-1" title="1"><span class="kw">library</span>(<span class="st">&quot;randomForest&quot;</span>)</a>
-<a class="sourceLine" id="cb11-2" title="2"><span class="cf">if</span> (<span class="kw">sum</span>(<span class="kw">is.na</span>(ds[vars]))) ds[vars] &lt;-<span class="st"> </span><span class="kw">na.roughfix</span>(ds[vars])</a>
-<a class="sourceLine" id="cb11-3" title="3">ds[target] &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ds[[target]])</a>
-<a class="sourceLine" id="cb11-4" title="4">(tt &lt;-<span class="st"> </span><span class="kw">table</span>(ds[target]))</a></code></pre></div>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb8-1" title="1"><span class="kw">library</span>(<span class="st">&quot;randomForest&quot;</span>)</a>
+<a class="sourceLine" id="cb8-2" title="2"><span class="cf">if</span> (<span class="kw">sum</span>(<span class="kw">is.na</span>(ds[vars]))) ds[vars] &lt;-<span class="st"> </span><span class="kw">na.roughfix</span>(ds[vars])</a>
+<a class="sourceLine" id="cb8-3" title="3">ds[target] &lt;-<span class="st"> </span><span class="kw">as.factor</span>(ds[[target]])</a>
+<a class="sourceLine" id="cb8-4" title="4">(tt &lt;-<span class="st"> </span><span class="kw">table</span>(ds[target]))</a></code></pre></div>
 <pre><code>## 
-##  No Yes 
-## 300  66</code></pre>
+##     setosa versicolor  virginica 
+##         50         50         50</code></pre>
 <p>We construct the formula that describes the model which will predict the target based on all other variables.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb13-1" title="1">(form &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(target, <span class="st">&quot;~ .&quot;</span>)))</a></code></pre></div>
-<pre><code>## RainTomorrow ~ .</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb10-1" title="1">(form &lt;-<span class="st"> </span><span class="kw">as.formula</span>(<span class="kw">paste</span>(target, <span class="st">&quot;~ .&quot;</span>)))</a></code></pre></div>
+<pre><code>## Species ~ .</code></pre>
 <p>Finally we create the randomly selected training and test datasets, setting a seed so that the results can be exactly replicated.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb15-1" title="1">seed &lt;-<span class="st"> </span><span class="dv">42</span></a>
-<a class="sourceLine" id="cb15-2" title="2"><span class="kw">set.seed</span>(seed)</a>
-<a class="sourceLine" id="cb15-3" title="3"><span class="kw">length</span>(train &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">nrow</span>(ds), <span class="fl">0.7</span><span class="op">*</span><span class="kw">nrow</span>(ds)))</a></code></pre></div>
-<pre><code>## [1] 256</code></pre>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">length</span>(test &lt;-<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">seq_len</span>(<span class="kw">nrow</span>(ds)), train))</a></code></pre></div>
-<pre><code>## [1] 110</code></pre>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb12-1" title="1">seed &lt;-<span class="st"> </span><span class="dv">42</span></a>
+<a class="sourceLine" id="cb12-2" title="2"><span class="kw">set.seed</span>(seed)</a>
+<a class="sourceLine" id="cb12-3" title="3"><span class="kw">length</span>(train &lt;-<span class="st"> </span><span class="kw">sample</span>(<span class="kw">nrow</span>(ds), <span class="fl">0.7</span><span class="op">*</span><span class="kw">nrow</span>(ds)))</a></code></pre></div>
+<pre><code>## [1] 105</code></pre>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb14-1" title="1"><span class="kw">length</span>(test &lt;-<span class="st"> </span><span class="kw">setdiff</span>(<span class="kw">seq_len</span>(<span class="kw">nrow</span>(ds)), train))</a></code></pre></div>
+<pre><code>## [1] 45</code></pre>
 <p>The function to build a weighted random forest model in <strong>wsrf</strong> is:</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb19-1" title="1"><span class="kw">wsrf</span>(formula, data, ...)</a></code></pre></div>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb16-1" title="1"><span class="kw">wsrf</span>(formula, data, ...)</a></code></pre></div>
 <p>and</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">wsrf</span>(x,</a>
-<a class="sourceLine" id="cb20-2" title="2">     y,</a>
-<a class="sourceLine" id="cb20-3" title="3">     <span class="dt">mtry=</span><span class="kw">floor</span>(<span class="kw">log2</span>(<span class="kw">length</span>(x))<span class="op">+</span><span class="dv">1</span>),</a>
-<a class="sourceLine" id="cb20-4" title="4">     <span class="dt">ntree=</span><span class="dv">500</span>,</a>
-<a class="sourceLine" id="cb20-5" title="5">     <span class="dt">weights=</span><span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb20-6" title="6">     <span class="dt">parallel=</span><span class="ot">TRUE</span>,</a>
-<a class="sourceLine" id="cb20-7" title="7">     <span class="dt">na.action=</span>na.fail,</a>
-<a class="sourceLine" id="cb20-8" title="8">     <span class="dt">importance=</span><span class="ot">FALSE</span>,</a>
-<a class="sourceLine" id="cb20-9" title="9">     <span class="dt">nodesize=</span><span class="dv">2</span>,</a>
-<a class="sourceLine" id="cb20-10" title="10">     clusterlogfile,</a>
-<a class="sourceLine" id="cb20-11" title="11">     ...)</a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb17-1" title="1"><span class="kw">wsrf</span>(x,</a>
+<a class="sourceLine" id="cb17-2" title="2">     y,</a>
+<a class="sourceLine" id="cb17-3" title="3">     <span class="dt">mtry=</span><span class="kw">floor</span>(<span class="kw">log2</span>(<span class="kw">length</span>(x))<span class="op">+</span><span class="dv">1</span>),</a>
+<a class="sourceLine" id="cb17-4" title="4">     <span class="dt">ntree=</span><span class="dv">500</span>,</a>
+<a class="sourceLine" id="cb17-5" title="5">     <span class="dt">weights=</span><span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb17-6" title="6">     <span class="dt">parallel=</span><span class="ot">TRUE</span>,</a>
+<a class="sourceLine" id="cb17-7" title="7">     <span class="dt">na.action=</span>na.fail,</a>
+<a class="sourceLine" id="cb17-8" title="8">     <span class="dt">importance=</span><span class="ot">FALSE</span>,</a>
+<a class="sourceLine" id="cb17-9" title="9">     <span class="dt">nodesize=</span><span class="dv">2</span>,</a>
+<a class="sourceLine" id="cb17-10" title="10">     clusterlogfile,</a>
+<a class="sourceLine" id="cb17-11" title="11">     ...)</a></code></pre></div>
 <p>We use the training dataset to build a random forest model. All parameters, except <code>formula</code> and <code>data</code>, use their default values: <code>500</code> for <code>ntree</code> — the number of trees; <code>TRUE</code> for <code>weights</code> — weighted subspace random forest or random forest; <code>TRUE</code> for <code>parallel</code> — use multi-thread or other options, etc.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb21-1" title="1"><span class="kw">library</span>(<span class="st">&quot;wsrf&quot;</span>)</a>
-<a class="sourceLine" id="cb21-2" title="2">model.wsrf<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb21-3" title="3"><span class="kw">print</span>(model.wsrf<span class="fl">.1</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb18-1" title="1"><span class="kw">library</span>(<span class="st">&quot;wsrf&quot;</span>)</a>
+<a class="sourceLine" id="cb18-2" title="2">model.wsrf<span class="fl">.1</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb18-3" title="3"><span class="kw">print</span>(model.wsrf<span class="fl">.1</span>)</a></code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 500 trees.
 ## 
-##   No. of variables tried at each split: 5
+##   No. of variables tried at each split: 3
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.13
-##                               Strength: 0.61
-##                            Correlation: 0.18
+##                  Out-of-Bag Error Rate: 0.08
+##                               Strength: 0.84
+##                            Correlation: 0.10
 ## 
 ## Confusion matrix:
-##      No Yes class.error
-## No  208   6        0.03
-## Yes  28  14        0.67</code></pre>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb23-1" title="1"><span class="kw">print</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span>)  <span class="co"># Print tree 1.</span></a></code></pre></div>
-<pre><code>## Tree 1 has 23 tests (internal nodes), with OOB error rate 0.1596:
+##            setosa versicolor virginica class.error
+## setosa         37          1         0        0.03
+## versicolor      0         33         2        0.06
+## virginica       0          5        27        0.16</code></pre>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb20-1" title="1"><span class="kw">print</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span>)  <span class="co"># Print tree 1.</span></a></code></pre></div>
+<pre><code>## Tree 1 has 4 tests (internal nodes), with OOB error rate 0.1000:
 ## 
-##  1) Humidity3pm &lt;= 72
-##  .. 2) WindGustSpeed &lt;= 61
-##  .. .. 3) Cloud3pm &lt;= 5
-##  .. .. .. 4) Humidity9am &lt;= 92
-##  .. .. .. .. 5) MinTemp &lt;= -0.4
-##  .. .. .. .. .. 6) WindSpeed3pm &lt;= 17   [No] (1 0) *
-##  .. .. .. .. .. 6) WindSpeed3pm &gt;  17   [Yes] (0.33 0.67) *
-##  .. .. .. .. 5) MinTemp &gt;  -0.4
-##  .. .. .. .. .. 7) Pressure9am &lt;= 1016.1
-##  .. .. .. .. .. .. 8) Sunshine &lt;= 10.5   [No] (1 0) *
-##  .. .. .. .. .. .. 8) Sunshine &gt;  10.5
-##  .. .. .. .. .. .. .. 9) Temp9am &lt;= 15   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. 9) Temp9am &gt;  15   [No] (1 0) *
-##  .. .. .. .. .. 7) Pressure9am &gt;  1016.1   [No] (1 0) *
-##  .. .. .. 4) Humidity9am &gt;  92   [Yes] (0.25 0.75) *
-##  .. .. 3) Cloud3pm &gt;  5
-##  .. .. .. 10) WindSpeed3pm &lt;= 9
-##  .. .. .. .. 11) Pressure9am &lt;= 1023.7
-##  .. .. .. .. .. 12) WindGustDir == N   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == NNE   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == NE   [Yes] (0 1) *
-##  .. .. .. .. .. 12) WindGustDir == ENE   [No] (1 0) *
-##  .. .. .. .. .. 12) WindGustDir == E   [Yes] (0 1) *
-##  .. .. .. .. .. 12) WindGustDir == ESE   [Yes] (0 1) *
-##  .. .. .. .. .. 12) WindGustDir == SE   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == SSE   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == S   [Yes] (0 1) *
-##  .. .. .. .. .. 12) WindGustDir == SSW   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == SW   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == WSW   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == W   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == WNW   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == NW   [Yes] (0.12 0.88) *
-##  .. .. .. .. .. 12) WindGustDir == NNW   [Yes] (0 1) *
-##  .. .. .. .. 11) Pressure9am &gt;  1023.7   [No] (1 0) *
-##  .. .. .. 10) WindSpeed3pm &gt;  9
-##  .. .. .. .. 13) MinTemp &lt;= 16
-##  .. .. .. .. .. 14) Temp9am &lt;= 1   [Yes] (0 1) *
-##  .. .. .. .. .. 14) Temp9am &gt;  1
-##  .. .. .. .. .. .. 15) Rainfall &lt;= 2.8
-##  .. .. .. .. .. .. .. 16) WindSpeed9am &lt;= 6
-##  .. .. .. .. .. .. .. .. 17) WindGustSpeed &lt;= 30
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == N   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == NNE   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == NE   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == ENE   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == E   [No] (1 0) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == ESE   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == SE   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == SSE   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == S   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == SSW   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == SW   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == WSW   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == W   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == WNW   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == NW   [Yes] (0 1) *
-##  .. .. .. .. .. .. .. .. .. 18) WindGustDir == NNW   [No] (0.5 0.5) *
-##  .. .. .. .. .. .. .. .. 17) WindGustSpeed &gt;  30   [No] (1 0) *
-##  .. .. .. .. .. .. .. 16) WindSpeed9am &gt;  6   [No] (1 0) *
-##  .. .. .. .. .. .. 15) Rainfall &gt;  2.8
-##  .. .. .. .. .. .. .. 19) Temp3pm &lt;= 8.8   [No] (1 0) *
-##  .. .. .. .. .. .. .. 19) Temp3pm &gt;  8.8   [Yes] (0 1) *
-##  .. .. .. .. 13) MinTemp &gt;  16
-##  .. .. .. .. .. 20) WindDir3pm == N   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == NNE   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == NE   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == ENE   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == E   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == ESE   [Yes] (0 1) *
-##  .. .. .. .. .. 20) WindDir3pm == SE   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == SSE   [No] (1 0) *
-##  .. .. .. .. .. 20) WindDir3pm == S   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == SSW   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == SW   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == WSW   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == W   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == WNW   [Yes] (0.14 0.86) *
-##  .. .. .. .. .. 20) WindDir3pm == NW   [Yes] (0 1) *
-##  .. .. .. .. .. 20) WindDir3pm == NNW   [Yes] (0.14 0.86) *
-##  .. 2) WindGustSpeed &gt;  61
-##  .. .. 21) Temp3pm &lt;= 11.1   [No] (1 0) *
-##  .. .. 21) Temp3pm &gt;  11.1
-##  .. .. .. 22) WindGustSpeed &lt;= 65   [No] (0.5 0.5) *
-##  .. .. .. 22) WindGustSpeed &gt;  65   [Yes] (0 1) *
-##  1) Humidity3pm &gt;  72
-##  .. 23) WindGustSpeed &lt;= 30   [No] (0.75 0.25) *
-##  .. 23) WindGustSpeed &gt;  30   [Yes] (0 1) *</code></pre>
+##  1) Petal.Width &lt;= 0.5   [setosa] (1 0 0) *
+##  1) Petal.Width &gt;  0.5
+##  .. 2) Petal.Width &lt;= 1.6
+##  .. .. 3) Petal.Length &lt;= 4.9   [versicolor] (0 1 0) *
+##  .. .. 3) Petal.Length &gt;  4.9   [versicolor] (0 0.5 0.5) *
+##  .. 2) Petal.Width &gt;  1.6
+##  .. .. 4) Petal.Length &lt;= 4.8   [versicolor] (0 1 0) *
+##  .. .. 4) Petal.Length &gt;  4.8   [virginica] (0 0 1) *</code></pre>
 <p>Then, <code>predict</code> the classes of test data.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb25-1" title="1">cl &lt;-<span class="st"> </span><span class="kw">predict</span>(model.wsrf<span class="fl">.1</span>, <span class="dt">newdata=</span>ds[test, vars], <span class="dt">type=</span><span class="st">&quot;class&quot;</span>)<span class="op">$</span>class</a>
-<a class="sourceLine" id="cb25-2" title="2">actual &lt;-<span class="st"> </span>ds[test, target]</a>
-<a class="sourceLine" id="cb25-3" title="3">(accuracy.wsrf &lt;-<span class="st"> </span><span class="kw">mean</span>(cl <span class="op">==</span><span class="st"> </span>actual, <span class="dt">na.rm=</span><span class="ot">TRUE</span>))</a></code></pre></div>
-<pre><code>## [1] 0.8636364</code></pre>
-<p>Thus, we have built a model that is around 86% accurate on unseen testing data.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb22-1" title="1">cl &lt;-<span class="st"> </span><span class="kw">predict</span>(model.wsrf<span class="fl">.1</span>, <span class="dt">newdata=</span>ds[test, vars], <span class="dt">type=</span><span class="st">&quot;class&quot;</span>)<span class="op">$</span>class</a>
+<a class="sourceLine" id="cb22-2" title="2">actual &lt;-<span class="st"> </span>ds[test, target]</a>
+<a class="sourceLine" id="cb22-3" title="3">(accuracy.wsrf &lt;-<span class="st"> </span><span class="kw">mean</span>(cl <span class="op">==</span><span class="st"> </span>actual, <span class="dt">na.rm=</span><span class="ot">TRUE</span>))</a></code></pre></div>
+<pre><code>## [1] 0.9555556</code></pre>
+<p>Thus, we have built a model that is around 96% accurate on unseen testing data.</p>
 <p>Using different random seed, we obtain another model.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb27-1" title="1"><span class="co"># Here we build another model without weighting.</span></a>
-<a class="sourceLine" id="cb27-2" title="2">model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">weights=</span><span class="ot">FALSE</span>, <span class="dt">parallel=</span><span class="ot">FALSE</span>)</a>
-<a class="sourceLine" id="cb27-3" title="3"><span class="kw">print</span>(model.wsrf<span class="fl">.2</span>)</a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb24-1" title="1"><span class="kw">set.seed</span>(seed<span class="op">+</span><span class="dv">1</span>)</a>
+<a class="sourceLine" id="cb24-2" title="2"></a>
+<a class="sourceLine" id="cb24-3" title="3"><span class="co"># Here we build another model without weighting.</span></a>
+<a class="sourceLine" id="cb24-4" title="4">model.wsrf<span class="fl">.2</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">weights=</span><span class="ot">FALSE</span>, <span class="dt">parallel=</span><span class="ot">FALSE</span>)</a>
+<a class="sourceLine" id="cb24-5" title="5"><span class="kw">print</span>(model.wsrf<span class="fl">.2</span>)</a></code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 500 trees.
 ## 
-##   No. of variables tried at each split: 5
+##   No. of variables tried at each split: 3
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.15
-##                               Strength: 0.59
-##                            Correlation: 0.19
+##                  Out-of-Bag Error Rate: 0.07
+##                               Strength: 0.85
+##                            Correlation: 0.08
 ## 
 ## Confusion matrix:
-##      No Yes class.error
-## No  210   4        0.02
-## Yes  34   8        0.81</code></pre>
+##            setosa versicolor virginica class.error
+## setosa         38          0         0        0.00
+## versicolor      0         33         2        0.06
+## virginica       0          5        27        0.16</code></pre>
 <p>We can also derive a subset of the forest from the model or a combination of multiple forests.</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb29-1" title="1">submodel.wsrf &lt;-<span class="st"> </span><span class="kw">subset.wsrf</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">150</span>)</a>
-<a class="sourceLine" id="cb29-2" title="2"><span class="kw">print</span>(submodel.wsrf)</a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb26-1" title="1">submodel.wsrf &lt;-<span class="st"> </span><span class="kw">subset.wsrf</span>(model.wsrf<span class="fl">.1</span>, <span class="dv">1</span><span class="op">:</span><span class="dv">150</span>)</a>
+<a class="sourceLine" id="cb26-2" title="2"><span class="kw">print</span>(submodel.wsrf)</a></code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 150 trees.
 ## 
-##   No. of variables tried at each split: 5
+##   No. of variables tried at each split: 3
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.14
-##                               Strength: 0.62
-##                            Correlation: 0.19
+##                  Out-of-Bag Error Rate: 0.09
+##                               Strength: 0.84
+##                            Correlation: 0.10
 ## 
 ## Confusion matrix:
-##      No Yes class.error
-## No  207   7        0.03
-## Yes  28  14        0.67</code></pre>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb31-1" title="1">bigmodel.wsrf &lt;-<span class="st"> </span><span class="kw">combine.wsrf</span>(model.wsrf<span class="fl">.1</span>, model.wsrf<span class="fl">.2</span>)</a>
-<a class="sourceLine" id="cb31-2" title="2"><span class="kw">print</span>(bigmodel.wsrf)</a></code></pre></div>
+##            setosa versicolor virginica class.error
+## setosa         36          2         0        0.05
+## versicolor      0         33         2        0.06
+## virginica       0          5        27        0.16</code></pre>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb28-1" title="1">bigmodel.wsrf &lt;-<span class="st"> </span><span class="kw">combine.wsrf</span>(model.wsrf<span class="fl">.1</span>, model.wsrf<span class="fl">.2</span>)</a>
+<a class="sourceLine" id="cb28-2" title="2"><span class="kw">print</span>(bigmodel.wsrf)</a></code></pre></div>
 <pre><code>## A Weighted Subspace Random Forest model with 1000 trees.
 ## 
-##   No. of variables tried at each split: 5
+##   No. of variables tried at each split: 3
 ##         Minimum size of terminal nodes: 2
-##                  Out-of-Bag Error Rate: 0.14
-##                               Strength: 0.60
-##                            Correlation: 0.18
+##                  Out-of-Bag Error Rate: 0.08
+##                               Strength: 0.84
+##                            Correlation: 0.08
 ## 
 ## Confusion matrix:
-##      No Yes class.error
-## No  210   4        0.02
-## Yes  31  11        0.74</code></pre>
+##            setosa versicolor virginica class.error
+## setosa         37          1         0        0.03
+## versicolor      0         33         2        0.06
+## virginica       0          5        27        0.16</code></pre>
 <p>Next, we will specify building the model on a cluster of servers.</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb33-1" title="1">servers &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;node&quot;</span>, <span class="dv">31</span><span class="op">:</span><span class="dv">40</span>)</a>
-<a class="sourceLine" id="cb33-2" title="2">model.wsrf<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span>servers)</a></code></pre></div>
-<p>All we need is a character verctor specifying the hostnames of which nodes to use, or a named integer vector, whose values of the elements give how many threads to use for model building, in other words, how many trees built simultaneously. More detail descriptions about <strong>wsrf</strong> are presented in the <a href="https://cran.r-project.org/package=wsrf/wsrf.pdf">manual</a>.</p>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb30-1" title="1">servers &lt;-<span class="st"> </span><span class="kw">paste0</span>(<span class="st">&quot;node&quot;</span>, <span class="dv">31</span><span class="op">:</span><span class="dv">40</span>)</a>
+<a class="sourceLine" id="cb30-2" title="2">model.wsrf<span class="fl">.3</span> &lt;-<span class="st"> </span><span class="kw">wsrf</span>(form, <span class="dt">data=</span>ds[train, vars], <span class="dt">parallel=</span>servers)</a></code></pre></div>
+<p>All we need is a character vector specifying the hostnames of which nodes to use, or a named integer vector, whose values of the elements give how many threads to use for model building, in other words, how many trees built simultaneously. More detail descriptions about <strong>wsrf</strong> are presented in the <a href="https://cran.r-project.org/package=wsrf/wsrf.pdf">manual</a>.</p>
 </div>
 <div id="references" class="section level2 unnumbered">
 <h2>References</h2>
@@ -610,9 +522,6 @@ code > span.er { color: #a61717; background-color: #e3d2d2; }
 </div>
 <div id="ref-dirk2011rcpp">
 <p>Eddelbuettel, Dirk, and Romain François. 2011. “Rcpp: Seamless R and C++ Integration.” <em>Journal of Statistical Software</em> 40 (8): 1–18. <a href="https://doi.org/10.18637/jss.v040.i08">https://doi.org/10.18637/jss.v040.i08</a>.</p>
-</div>
-<div id="ref-rattle">
-<p>Williams, Graham J. 2011. <em>Data Mining with Rattle and R: The Art of Excavating Data for Knowledge Discovery</em>. Use R! Springer. <a href="https://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896">https://www.amazon.com/gp/product/1441998896/ref=as_li_qf_sp_asin_tl?ie=UTF8&amp;tag=togaware-20&amp;linkCode=as2&amp;camp=217145&amp;creative=399373&amp;creativeASIN=1441998896</a>.</p>
 </div>
 <div id="ref-xu2012classifying">
 <p>Xu, Baoxun, Joshua Zhexue Huang, Graham Williams, Qiang Wang, and Yunming Ye. 2012. “Classifying Very High-Dimensional Data with Random Forests Built from Small Subspaces.” <em>International Journal of Data Warehousing and Mining (IJDWM)</em> 8 (2): 44–63.</p>

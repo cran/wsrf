@@ -5,16 +5,13 @@
 #  devtools::install_github("simonyansenzhao/wsrf")
 
 ## ----usage_load, message=FALSE------------------------------------------------
-library("rattle.data")
-ds <- weather
+ds <- iris
 dim(ds)
 names(ds)
 
 ## ----usage_prepare------------------------------------------------------------
-target <- "RainTomorrow"
-ignore <- c("Date", "Location", "RISK_MM")
-(vars <- setdiff(names(ds), ignore))
-dim(ds[vars])
+target <- "Species"
+vars <- names(ds)
 
 ## ----message=FALSE------------------------------------------------------------
 library("randomForest")
@@ -59,6 +56,8 @@ actual <- ds[test, target]
 (accuracy.wsrf <- mean(cl == actual, na.rm=TRUE))
 
 ## ----usage_build_another, message=FALSE---------------------------------------
+set.seed(seed+1)
+
 # Here we build another model without weighting.
 model.wsrf.2 <- wsrf(form, data=ds[train, vars], weights=FALSE, parallel=FALSE)
 print(model.wsrf.2)

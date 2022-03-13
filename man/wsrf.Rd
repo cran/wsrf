@@ -98,26 +98,23 @@
   \item{predicted}{the predicted values of the input data based on
     out-of-bag samples.}
 
-  \item{useweights}{logical.  Whether weighted subspace selcetion is
+  \item{useweights}{logical.  Whether weighted subspace selection is
   used?  NULL if the model is obtained by combining multiple \pkg{wsrf}
   model and one of them has different value of 'useweights'.}
 
   \item{mtry}{integer.  The number of variables to be chosen when
-    spliting a node.}
+    splitting a node.}
 }
 
 \examples{
   library("wsrf")
 
   # Prepare parameters.
-  ds <- rattle.data::weather
+  ds <- iris
   dim(ds)
   names(ds)
-  target <- "RainTomorrow"
-  id     <- c("Date", "Location")
-  risk   <- "RISK_MM"
-  ignore <- c(id, if (exists("risk")) risk) 
-  vars   <- setdiff(names(ds), ignore)
+  target <- "Species"
+  vars   <- names(ds)
   if (sum(is.na(ds[vars]))) ds[vars] <- randomForest::na.roughfix(ds[vars])
   ds[target] <- as.factor(ds[[target]])
   (tt  <- table(ds[target]))
