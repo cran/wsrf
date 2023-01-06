@@ -1,8 +1,8 @@
 Package: wsrf
 Type: Package
 Title: Weighted Subspace Random Forest for Classification
-Version: 1.7.27
-Date: 2022-03-13
+Version: 1.7.30
+Date: 2022-12-27
 Authors@R: 
     c(person(given = "Qinghan",
              family = "Meng",
@@ -57,7 +57,7 @@ Classification/ACM-2012: Computing methodologies ~ Classification and
         by classification, Computing methodologies ~ Massively parallel
         and high-performance simulations, Computing methodologies ~
         Distributed simulation
-Packaged: 2022-03-13 13:06:39 UTC; simon
+Packaged: 2022-12-27 08:28:17 UTC; simon
 Author: Qinghan Meng [aut],
   He Zhao [aut, cre] (<https://orcid.org/0000-0001-5763-9743>),
   Graham J. Williams [aut] (<https://orcid.org/0000-0001-7041-4127>),
@@ -66,4 +66,4 @@ Author: Qinghan Meng [aut],
   Joshua Zhexue Huang [aut] (<https://orcid.org/0000-0002-6797-2571>)
 Maintainer: He Zhao <Simon.Yansen.Zhao@gmail.com>
 Repository: CRAN
-Date/Publication: 2022-03-13 13:30:03 UTC
+Date/Publication: 2023-01-06 16:10:02 UTC
