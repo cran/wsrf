@@ -1,8 +1,8 @@
 Package: wsrf
 Type: Package
 Title: Weighted Subspace Random Forest for Classification
-Version: 1.7.30
-Date: 2022-12-27
+Version: 1.7.31
+Date: 2025-12-16
 Authors@R: 
     c(person(given = "Qinghan",
              family = "Meng",
@@ -42,7 +42,7 @@ Description:
     subspace selection in place of the traditional random variable
     sampling.This new approach is particularly useful in building
     models from high-dimensional data.
-License: GPL (>= 2)
+License: GPL (>= 3)
 URL: https://github.com/SimonYansenZhao/wsrf, https://togaware.com
 BugReports: https://github.com/SimonYansenZhao/wsrf/issues
 Depends: parallel, R (>= 3.3.0), Rcpp (>= 0.10.2), stats
@@ -51,19 +51,20 @@ Suggests: knitr (>= 1.5), randomForest (>= 4.6.7), stringr (>= 0.6.2),
         rmarkdown (>= 1.6)
 VignetteBuilder: knitr
 NeedsCompilation: yes
-SystemRequirements: C++11
 Classification/ACM-2012: Computing methodologies ~ Classification and
         regression trees, Computing methodologies ~ Supervised learning
         by classification, Computing methodologies ~ Massively parallel
         and high-performance simulations, Computing methodologies ~
         Distributed simulation
-Packaged: 2022-12-27 08:28:17 UTC; simon
+Packaged: 2025-12-16 06:39:35 UTC; simon
 Author: Qinghan Meng [aut],
-  He Zhao [aut, cre] (<https://orcid.org/0000-0001-5763-9743>),
-  Graham J. Williams [aut] (<https://orcid.org/0000-0001-7041-4127>),
+  He Zhao [aut, cre] (ORCID: <https://orcid.org/0000-0001-5763-9743>),
+  Graham J. Williams [aut] (ORCID:
+    <https://orcid.org/0000-0001-7041-4127>),
   Junchao Lv [aut],
   Baoxun Xu [aut],
-  Joshua Zhexue Huang [aut] (<https://orcid.org/0000-0002-6797-2571>)
+  Joshua Zhexue Huang [aut] (ORCID:
+    <https://orcid.org/0000-0002-6797-2571>)
 Maintainer: He Zhao <Simon.Yansen.Zhao@gmail.com>
 Repository: CRAN
-Date/Publication: 2023-01-06 16:10:02 UTC
+Date/Publication: 2025-12-16 09:30:02 UTC

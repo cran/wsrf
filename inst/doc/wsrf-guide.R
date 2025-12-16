@@ -1,8 +1,8 @@
 ## ----eval=FALSE---------------------------------------------------------------
-#  install.packages("wsrf")
+# install.packages("wsrf")
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  devtools::install_github("simonyansenzhao/wsrf")
+# devtools::install_github("simonyansenzhao/wsrf")
 
 ## ----usage_load, message=FALSE------------------------------------------------
 ds <- iris
@@ -29,20 +29,20 @@ length(train <- sample(nrow(ds), 0.7*nrow(ds)))
 length(test <- setdiff(seq_len(nrow(ds)), train))
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  wsrf(formula, data, ...)
+# wsrf(formula, data, ...)
 
 ## ----eval=FALSE---------------------------------------------------------------
-#  wsrf(x,
-#       y,
-#       mtry=floor(log2(length(x))+1),
-#       ntree=500,
-#       weights=TRUE,
-#       parallel=TRUE,
-#       na.action=na.fail,
-#       importance=FALSE,
-#       nodesize=2,
-#       clusterlogfile,
-#       ...)
+# wsrf(x,
+#      y,
+#      mtry=floor(log2(length(x))+1),
+#      ntree=500,
+#      weights=TRUE,
+#      parallel=TRUE,
+#      na.action=na.fail,
+#      importance=FALSE,
+#      nodesize=2,
+#      clusterlogfile,
+#      ...)
 
 ## ----usage_build_by_default, message=FALSE------------------------------------
 library("wsrf")
@@ -69,6 +69,6 @@ bigmodel.wsrf <- combine.wsrf(model.wsrf.1, model.wsrf.2)
 print(bigmodel.wsrf)
 
 ## ----usage_build_on_cluster, eval=FALSE---------------------------------------
-#  servers <- paste0("node", 31:40)
-#  model.wsrf.3 <- wsrf(form, data=ds[train, vars], parallel=servers)
+# servers <- paste0("node", 31:40)
+# model.wsrf.3 <- wsrf(form, data=ds[train, vars], parallel=servers)
 
